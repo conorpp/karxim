@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+  
+<div id="menu" class="fright color1">
+    <div class="mItem background2 clicker" id="start">
+        Start discussion
+    </div>
+</div>
+
+<div id="map"></div>
+
+<div id="Discussion" class="hide background2 fright">
+  <div id="dX"class="fleft abs clicker background3" >X</div>
+  <div id="topSpace"class="background3" ></div>
+  <div id="dFill" ></div>
+  <div class="clear"></div>
+  <div id="sendWrap" class="background3">
+    <textarea placeholder=" Start a thread..." class=""></textarea>
+    <button id="send" class="clicker abs "> Send </button>
+    <div id="namePart" class="fright">
+      <input type="text" placeholder=" Your name" id="name">
+      <button id="nameSave" class="background4 clicker"> Save </button>
+      <p id="yourName" class="color0"></p>
+    </div>
+    <div class="errors color0 hide"></div>
+  </div>
+</div>
+{% csrf_token %}
+{% endblock %}
