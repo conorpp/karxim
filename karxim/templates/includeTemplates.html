@@ -7,7 +7,8 @@
 <div id="newPopup">
   <h1>Move to a location</h1>
   <input type="text" placeholder=" Discussion title">{% csrf_token %}
-  <button class="submit background1 clicker">Save</button>
+  <button class="dSubmit background1">Save</button>
+  <div class="clearL fs18 checkbox">Admin <input type="checkbox" name="admin" title="Gives you admin capabilities for this discussion" checked> </div>
 </div>
 
 {#
@@ -26,4 +27,27 @@
   </div>
 </div>
 
+
+{#
+    Admin UI
+#}
+
+<div id="adminTemplate">
+  <div class="admin pad5 left4 fright">
+    <button class="doneAdmin hide background1">Done</button>
+    <button class="addAdmin background4">Add admin</button>
+    <button class="removeClient background4">Remove client</button>
+  </div>
 </div>
+
+{#
+    popup message
+#}
+<div id="popupTemplate">
+  <div class="abs fright clicker pad10">X</div>
+  <div class="background0 pad20 fleft popup">
+    <p class="pad20 popupTitle fs16"><!-- title --></p>
+    <p class="popupMessage"><!-- message --></p>
+  </div>
+</div>
+</div>{# end hide #}

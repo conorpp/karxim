@@ -1,12 +1,24 @@
 var Map;
 var K = {
     
-    init: function(){
+    /***data****
+        @discussion - pk of current discussion being viewed.
+        @userCoords - latlng pair of user if location is found.
+        @username - name selected by user.  Will default to cookie if it exists.
+        @replyTo - pk of message being replied to.  May not be necessary to track here.
+    */
+    discussion:0,
+    userCoords:null,
+    username:'',
+    replyTo:null,
+    
+    create: function(commit){
+        if (commit == undefined) commit = true;
         Map = L.map('map',{
             center: [51.505, -0.09],
             zoom: 13
         });
-        L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);				
+        if(commit)L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);				
         Map.locate({setView: true, timeout:1500});
     },
     
@@ -18,7 +30,7 @@ var K = {
             var iconURL = '/static/images/newMarker.png';
         }else var iconURL = '/static/images/marker.png';
         if (options.latlng ==undefined) options.latlng = Map.getCenter();
-        if (options.content ==undefined) options.content = $('#newPopup').html();
+        if (options.content ==undefined) options.content = T.newMark;
         if(Map.newMark)Map.removeLayer(Map.newMark);
         var markOptions = {    
             draggable:options.draggable,
@@ -69,43 +81,82 @@ var K = {
             })
         }
     },
-    discussion:0,
-    userCoords:null,
-    username:'',
-    replyTo:null
+    /* installs admin UI for current discussion */
+    admin:function(){
+        console.log('admin ', T.admin);
+        $('#topSpace').append(T.admin);
+    },
+    /* removes admin UI */
+    adminOff: function(){
+        $('#topSpace').find('.admin').remove();
+    },
+    /* displays standard message for miliseconds */
+    popup: function(title, message, millis){
+        if (message == undefined) message = title;
+        if (millis == undefined) millis = 2500;
+        var popup = $('#popupSpace');
+        popup.html(T.popup);
+        popup.find('.popupTitle').html(title);
+        popup.find('.popupMessage').html(message);
+        popup.show('fast');
+        //setTimeout(function(){popup.hide('fast')},millis);
+    }
+
 };
 
-
+var T;
 $(document).ready(function(){
-    K.init();
+    T = {
+        admin: $('#adminTemplate').html(),
+        
+        loadIcon: $('#Loader').html(),
+        
+        newMark: $('#newPopup').html(),
+        
+        popup: $('#popupTemplate').html()
+    }
+});
+
+var COMMIT = true;
+$(document).ready(function(){
     
-    K.username = getCookie('username');
+    K.create(COMMIT);
+    
+    //K.popup('testing out the pop up.','this is the message',2000);
+    K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
         $('#yourName').html('Your name is '+K.username);
     }
     
-    var Loading = $('#Loader').html();
     $('#start').on('click', function(){
-        K.createMarker({'draggable':true,'start':true, 'content':$('#newPopup').html()});
+        console.log('new mark ',T.newMark);
+        K.createMarker({'draggable':true,'start':true, 'content':T.newMark});
     });
-    $(document).on('click', '.submit', function(){
-        var name = $(this).siblings('input').val();
-        if ($.trim(name)=='') return;
+    $(document).on('click', '.dSubmit', function(){
+        var title = $(this).sblings('input[type="text"]').val();
+        var admin = $(this).siblings("div.checkbox").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
+        if ($.trim(title)=='') return;
         var latlng = Map.newMark.getLatLng();
-        var popup = new L.Popup().setContent(Loading);
+        var popup = new L.Popup().setContent(T.loadIcon);
         Map.newMark.closePopup();
         Map.newMark.bindPopup(popup);
         Map.newMark.openPopup();
-        AJAXF.makeDiscussion(latlng.lat, latlng.lng, name);
+        AJAXF.makeDiscussion(latlng, title,admin);
     });
     $(document).on('click', '.join', function(){
-        $('#dFill').html($('#Loader').html());
+        
+        $('#dFill').html(T.loadIcon);
         $('#Discussion').show('fast');
         var pk = this.id.replace('join','');
+        var title = $('#discussion'+pk).find('h2').html();
+        $('#dTitle').html(title);
+        $('#dLink').val(Settings.host+'/d/'+pk);
+        $('#titleLink').attr('href', Settings.host+'/d/'+pk);
         K.discussion = pk;
         AJAXF.getMessages(pk);
-        Message.socket.emit('joinChat', {pk:pk});
+        Message.subscribe(pk);
+        
     });
     $('#dX, #map').click(function(){
         $('#Discussion').hide('fast');
@@ -125,7 +176,9 @@ $(document).ready(function(){
         $(this).siblings('textarea').val('');
         setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
     });
-    
+    $('#dLink').click(function(){
+        $(this).select();
+    });
     Map.on('locationfound', function(e){
         K.userCoords = e.latlng;
     });
@@ -137,7 +190,7 @@ $(document).ready(function(){
         $('input#name').val('');
         $('input#name').attr('placeholder', name);
         $('#yourName').html('Your name is '+name);
-        setCookie('username', name, 12);
+        Cookie.set('username', name, 12);
     });
     
     $(document).on('click','.replyTo', function(){
@@ -174,115 +227,27 @@ $(document).ready(function(){
     });
 });
 
-var AJAXF = {
-    makeDiscussion: function(lat,lng,name) {
-        $.ajax({
-            type: 'POST',
-            url: '/start/',
-            data: {
-                'lat': lat,
-                'lng': lng,
-                'title': name,
-                'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-            },
-            dataType:'json',
-            success: function(data, textStatus,jqXHR) {
-                console.log('GOT DATA',data);
-                if (!data['error']) {                
-                    data = data[0];
-                    K.removeNewMark();
-                    K.createMarker({
-                        'content':data['html'],
-                        'latlng':[data['lat'],data['lng']]
-                    })
-                }else{
-                    K.setNewMarkError(data['error']);
-                }
-            }
-        });
-    },
-    getMessages: function(pk){
-        console.log('pk', pk);
-        $.ajax({
-            type: 'POST',
-            url: '/messages/',
-            data: {
-                'pk': pk,
-                'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-                },
-            dataType:'json',
-            success: function(data, textStatus,jqXHR) {
-                console.log('GOT DATA',data);
-                var fill = $('#dFill');
-                fill.html('');
-                for (i in data) {
-                    fill.append(data[i]['html']);
-                }
 
-            }
-        });
-        
+var Cookie = {
+    
+    set: function(c_name,value,exdays){
+        var exdate=new Date();
+        exdate.setDate(exdate.getDate() + exdays);
+        var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+        document.cookie=c_name + "=" + c_value;
     },
     
-    send: function(message, name, pk, replyTo){
-        data  = {
-            'discussion': pk,
-            'pk': pk,
-            'username': name,
-            'text': message,
-            'replyTo': replyTo,
-            'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-            }       
-        try{
-            data.lat = K.userCoords.lat;
-            data.lng = K.userCoords.lng;
-        }catch(e){}
-        $.ajax({
-            type: 'POST',
-            url: '/send/',
-            data:data,
-            dataType:'json',
-            success: function(data, textStatus,jqXHR) {
-                if (data['error']) {
-                    $('.errors').html(data['error']);
-                    $('.errors').show('fast');
-                    setTimeout(function(){
-                        $('.errors').hide('slow');
-                    },1200);
-                }
-            }
-        });
-    },
-}
-
-
-function setCookie(c_name,value,exdays){
-    var exdate=new Date();
-    exdate.setDate(exdate.getDate() + exdays);
-    var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-    document.cookie=c_name + "=" + c_value;
-}
-
-function getCookie(c_name){
-    var c_value = document.cookie;
-    var c_start = c_value.indexOf(" " + c_name + "=");
-    if (c_start == -1)
-      {
-      c_start = c_value.indexOf(c_name + "=");
-      }
-    if (c_start == -1)
-      {
-      c_value = null;
-      }
-    else
-      {
-      c_start = c_value.indexOf("=", c_start) + 1;
-      var c_end = c_value.indexOf(";", c_start);
-      if (c_end == -1)
-      {
-    c_end = c_value.length;
+    get: function(c_name){
+        var c_value = document.cookie;
+        var c_start = c_value.indexOf(" " + c_name + "=");
+        if (c_start == -1) c_start = c_value.indexOf(c_name + "=");
+        if (c_start == -1) c_value = null;
+        else{
+            c_start = c_value.indexOf("=", c_start) + 1;
+            var c_end = c_value.indexOf(";", c_start);
+            if (c_end == -1) c_end = c_value.length;
+            c_value = unescape(c_value.substring(c_start,c_end));
+        }
+        return c_value;
     }
-    c_value = unescape(c_value.substring(c_start,c_end));
-    }
-    return c_value;
-}
+};

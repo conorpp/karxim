@@ -1,4 +1,8 @@
-
+var Settings = {
+    host:'http://localhost:8000',
+    simplehost:'http://localhost',
+    MessagePort:4000
+};
 
 var Message = {
     
@@ -7,7 +11,7 @@ var Message = {
     */
     connect: function(){
         try {
-            Message.socket = io.connect('http://localhost', {port: 4000});
+            Message.socket = io.connect(Settings.simplehost, {port: Settings.MessagePort});
             Message.socket.on('connect', function(){
 
             }); 
@@ -49,11 +53,15 @@ var Message = {
             minutes = '0' + minutes;
         }
         return hours + ':' + minutes + ' ' + half;
+    },
+    
+    subscribe:function(pk){
+        Message.socket.emit('joinChat', {pk:pk});
     }
     
-}
+};
 
-$(document).on('ready', function(){
+$(document).ready(function(){
 
     Message.connect();
 

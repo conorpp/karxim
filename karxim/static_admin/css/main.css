@@ -1,6 +1,7 @@
 *{
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
 body{
     max-height: 100%;
 }
@@ -47,10 +48,23 @@ input[type="checkbox"]{
 .color4{color:#5F5F5F;}
 .background4{background: #5F5F5F;}
 
+.bold{font-weight: bold;}
+.fs6{font-size: .6em;}
+.fs8{font-size: .8em;}
+.fs12{font-size: 1.2em;}
 .fs14{font-size: 1.4em;}
 .fs16{font-size: 1.6em;}
 .fs18{font-size: 1.8em;}
 .fs20{font-size: 2em;}
+.pad0{padding:0px}
+.pad5{padding:5px}
+.pad10{padding:10px}
+.pad15{padding:15px}
+.pad20{padding:20px}
+.left2{margin-left: 2em}
+.left4{margin-left: 4em}
+.left6{margin-left: 6em}
+
 
 button{
     border:none;
@@ -58,6 +72,7 @@ button{
     color:white;
     padding:10px;
     border-radius: 2px;
+    cursor: pointer;
 }
 
 #map{
@@ -89,3 +104,11 @@ button{
     font-size: 1.65em;
 }
 
+#popupSpace{
+    z-index: 5;
+    box-shadow: -2px 2px 20px 1px #000
+}
+
+.popup{
+    border-radius: 4px;
+}

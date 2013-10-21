@@ -7,6 +7,8 @@ from django.core import signing
 class NewDiscussionForm(forms.ModelForm):
     admin = forms.CharField(max_length = 120, required = False)
     title = forms.CharField(max_length = 120, required = False)
+    lat = forms.FloatField(required = False)
+    lng = forms.FloatField(required = False)
 
     class Meta:
         model = Discussion
@@ -25,10 +27,14 @@ class NewDiscussionForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = False
-        self.admin = self.cleaned_data.get('name', 'hacker')            
+        self.admin = self.cleaned_data.get('admin', True)
+        print 'ADMIN',self.admin
         self.title = self.cleaned_data.get('title', 'hacker talk')
-        
-        if self.session is None:
+        self.lat = self.cleaned_data['lat']
+        self.lng =self.cleaned_data['lng']
+        if not self.lat or not self.lng:
+            self.error = 'Try redragging the marker.  We failed to get the location.  We\'re  sorry.'
+        elif self.session is None:
             self.error = 'Please allow cookies or refresh the page to continue.'
         else:
             try:
@@ -48,8 +54,8 @@ class NewDiscussionForm(forms.ModelForm):
         
     def save(self, ):
         self.discussion = Discussion.objects.create(
-            lat = self.cleaned_data['lat'],
-            lng = self.cleaned_data['lng'],
+            lat = self.lat,
+            lng = self.lng,
             title = self.title,
             admin = self.admin,
             sessionid = self.session
@@ -133,15 +139,16 @@ class NewMessageForm(forms.ModelForm):
             self.parent.replies += 1
             self.parent.newReplies += 1
             self.parent.save()
-            self.message = Message.objects.create(discussion=self.discussion)
+            self.message = Message.objects.create()
             self.message.updateActive()
         else:
-            self.message = Message.objects.create(discussion=self.discussion)
+            self.message = Message.objects.create()
         self.newPk = self.message.pk        #need pk before returning
         
         return self.message
 
     def commit(self):                       #for speed
+        self.message.discussion = self.discussion
         self.message.username = self.name
         self.message.text = self.text
         self.message.stem = self.stem

@@ -9,6 +9,7 @@ from django.utils import simplejson
 from karxim.apps.messaging.models import Discussion
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
+from karxim.functions import set_cookie
 from karxim.settings import redisPort, webDomain
 
 REDIS = redis.StrictRedis(host=webDomain, port=redisPort, db=0)
@@ -34,19 +35,33 @@ def start(request):
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
-            return HttpResponse(data)
+            response = HttpResponse(data)
+            if form.admin:
+                set_cookie(response, 'admin', form.session, days_expire=7, signed=True)
+            return response
         else:
             print form.error
             return HttpResponse(simplejson.dumps({'error':form.error}))
 
 def messages(request):
-    """ loads all messages for a discussion """
+    """ loads all messages for a discussion pk"""
     
     pk = request.POST['pk']
+    admin=False
+    try:
+        adminid = request.get_signed_cookie('admin')
+        if pk == adminid:
+            admin = True
+    except ArithmeticError:pass
     d = Discussion.objects.get(pk=pk)
     messages = d.message_set.all()
-    
-    data = MessageSerializer(messages).data()
+    print 'admin status: ', admin
+    if admin:
+        data = MessageSerializer(messages).data(json=False)
+        data['admin'] = admin
+        data = simplejson.dumps(data)
+    else:
+        data = MessageSerializer(messages).data()
     response = HttpResponse(data)
     
     return response
@@ -90,3 +105,34 @@ def send(request):
         print str(e)
         return HttpResponse(status=500)    
             
+def admin(request):pass
+
+def discussion(request,pk='0'):
+    try:
+        print 'got pk', pk
+        pk = int(pk)
+        d = Discussion.objects.get(pk=pk)
+        messages = d.message_set.all()
+        data = data = MessageSerializer(messages).data(json = False)
+        data['title'] = d.title
+        data['pk'] = pk
+        data['templates'] = render_to_string('includeTemplates.html')
+        adminid = request.get_signed_cookie('admin', None)
+        admin = False
+        print 'id ', adminid
+        print 'd id ', d.sessionid
+        if adminid is not None:
+            if unicode(adminid) == unicode(d.sessionid):
+                admin = True
+                
+        print 'result ' , admin
+        
+        data['admin'] = admin
+            
+        return render(request,'discussion.html', data)
+    except:
+        return HttpResponse(status=404)
+    
+    
+    
+    

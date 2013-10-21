@@ -63,8 +63,9 @@ class MessageSerializer():
             messages = [self.assignFields(self.messages)]                  #object
         
         json = kwargs.get('json', True)
-        if json: return simplejson.dumps(messages)
-        else: return messages
+        data = {'messages':messages}
+        if json: return simplejson.dumps(data)
+        else: return data
     
     def serialize(self, nestedMessages):
         parents = nestedMessages.order_by(self.order_by)

@@ -7,13 +7,13 @@ from django.contrib.contenttypes import generic
 
 class Discussion(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
-    sessionid = models.CharField(max_length=100)
+    sessionid = models.CharField(max_length=100, db_index=True)
     
     title = models.CharField(max_length=500)
-    admin = models.CharField(max_length=50, default='default')
+    admin = models.BooleanField(default=False)
     
-    lastActive = models.DateTimeField(auto_now_add=True)
-    created = models.DateTimeField(auto_now_add=True)
+    lastActive = models.DateTimeField(auto_now_add=True, db_index=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
     usersPosted = models.IntegerField(default=0)
     totalMessages = models.IntegerField(default=0)
     
@@ -21,7 +21,7 @@ class Discussion(models.Model):
     lng = models.CharField(max_length=50)
     distance = models.FloatField(default = 0)
     
-    #following not implemented
+    #the following not implemented
     newMessages = models.IntegerField(default=0)
     description = models.TextField(max_length=10000)
     explicit = models.BooleanField(default=False)
@@ -50,9 +50,9 @@ class Discussion(models.Model):
 
 class Message(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
-    sessionid = models.CharField(max_length=100)
+    sessionid = models.CharField(max_length=100, db_index=True)
     parent = models.ForeignKey('self', blank=True, null=True)
-    discussion = models.ForeignKey(Discussion)
+    discussion = models.ForeignKey(Discussion, blank=True, null=True)
 
     stem = models.IntegerField(default=0, db_index=True)
     replies = models.IntegerField(default=0)
@@ -62,7 +62,7 @@ class Message(models.Model):
     username = models.CharField(max_length=50)
     distance = models.FloatField(default = 0)
     lastActive = models.DateTimeField(auto_now_add=True, default=timezone.now(), db_index=True)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
     #following not implemented
     image = models.ImageField(upload_to='/images',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
