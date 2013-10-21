@@ -96,12 +96,12 @@ def detectMobile(request):
             return True 
         return False
     
-url_regexp = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
-
+    
+URL_REGEX = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
+_CLEANER = Cleaner(style=False, links=True, page_structure=False)
 def cleanHtml(text):
     """ cleans up html and auto links with target=_blank for forms """
-    cleaner = Cleaner(style=False, links=True, page_structure=False)
-    text = cleaner.clean_html(autolink_html(text, [url_regexp], avoid_hosts=[]))
+    text = _CLEANER.clean_html(autolink_html(text, [URL_REGEX], avoid_hosts=[]))
     text = BeautifulSoup(text)
     for atag in text.find_all('a'):                          #open in new tab
         atag['target'] = '_blank'

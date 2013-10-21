@@ -54,35 +54,41 @@ class NewMessageForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = False
+        print 'cleaned data',self.cleaned_data
         message = self.cleaned_data['text']
+        if not message: return
+        
         self.name = self.cleaned_data.get('username', 'hacker')
-        if self.name.replace(' ','') == '': self.name = 'hacker'
+        if self.name.strip() == '': self.name = 'hacker'
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
+        
         try:
             self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
         except:
             self.distance = None
             
         self.text = cleanHtml(message)
+        
         try:
-            c = Message.objects.filter(username = self.name, text=self.text, created__gte=timezone.now()-timezone.timedelta(hours=2))
+            c = Message.objects.filter(
+                username = self.name,
+                text=self.text,
+                created__gte=timezone.now()-timezone.timedelta(hours=2),
+                discussion = self.discussion
+                )
             print 'SPAMM',c.count()
             if c.count()>4:
                 self.error = 'You\'re sending the same message too much'
         except ValueError:pass
+        
         if self.replyTo:
             self.parent = self.discussion.message_set.get(pk=self.replyTo)
             self.stem = self.parent.stem +1
         else:
             self.stem = 0
         
-        try:pass            #spam protection
-            #if count > 7:
-            #    self.error = 'You\'re sending messages too fast'
-        except:pass
-    
         if self.error:
             raise forms.ValidationError(self.error)
         return self.cleaned_data

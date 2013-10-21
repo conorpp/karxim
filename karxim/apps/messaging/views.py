@@ -39,13 +39,14 @@ def messages(request):
     data = MessageSerializer(messages).data()
     return HttpResponse(data)
 
-#@csrf_exempt
+
+_r = redis.StrictRedis(host=webDomain, port=redisPort, db=0)
 def send(request):
     """ recieving and processing messages from chats """
     try:        
-        r = redis.StrictRedis(host=webDomain, port=redisPort, db=0)
+        
         pk = request.POST['pk']
-        print request.POST
+        print 'request : ',request.POST
         form = NewMessageForm(request.POST)
         form.setFields(replyTo = request.POST.get('replyTo',None))
         if not form.is_valid():
@@ -63,10 +64,12 @@ def send(request):
                 'age':'just now'
             },
             })
-
-        r.publish(pk, simplejson.dumps(data))
-        form.commit()
-        return HttpResponse("Message processed")
+        print 'before json data ',data
+        
+        _r.publish(pk, simplejson.dumps(data))
+        
+        form.commit()   #moved as many db hits until after publish so clients get message quicker.
+        return HttpResponse(status=200)
     
     except ArithmeticError:
         print str(e)
