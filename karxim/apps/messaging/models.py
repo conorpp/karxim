@@ -7,27 +7,31 @@ from django.contrib.contenttypes import generic
 
 class Discussion(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
+    sessionid = models.CharField(max_length=100)
     
-    name = models.CharField(max_length=500)
-    description = models.TextField(max_length=10000)
-    username = models.CharField(max_length=50, default='default')
-    explicit = models.BooleanField(default=False)
+    title = models.CharField(max_length=500)
+    admin = models.CharField(max_length=50, default='default')
     
     lastActive = models.DateTimeField(auto_now_add=True)
     created = models.DateTimeField(auto_now_add=True)
-    upVote = models.IntegerField(default=0, db_index=True)
-    downVote = models.IntegerField(default=0)
     usersPosted = models.IntegerField(default=0)
     totalMessages = models.IntegerField(default=0)
-    newMessages = models.IntegerField(default=0)
     
-    index = models.CharField(max_length=18, db_index=True, default='0')
     lat = models.CharField(max_length=50)
     lng = models.CharField(max_length=50)
     distance = models.FloatField(default = 0)
     
+    #following not implemented
+    newMessages = models.IntegerField(default=0)
+    description = models.TextField(max_length=10000)
+    explicit = models.BooleanField(default=False)
+    index = models.CharField(max_length=18, db_index=True, default='0')
+    password = models.CharField(max_length=100, default='')
+    date = models.DateTimeField(auto_now_add=True)
+    upVote = models.IntegerField(default=0, db_index=True)
+    downVote = models.IntegerField(default=0)
     def __unicode__(self):
-        return self.name
+        return self.title
 
     def votes(self):
         return (self.upVote - self.downVote)
@@ -46,6 +50,7 @@ class Discussion(models.Model):
 
 class Message(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
+    sessionid = models.CharField(max_length=100)
     parent = models.ForeignKey('self', blank=True, null=True)
     discussion = models.ForeignKey(Discussion)
 
@@ -58,7 +63,9 @@ class Message(models.Model):
     distance = models.FloatField(default = 0)
     lastActive = models.DateTimeField(auto_now_add=True, default=timezone.now(), db_index=True)
     created = models.DateTimeField(auto_now_add=True)
-    
+    #following not implemented
+    image = models.ImageField(upload_to='/images',blank=True, null=True)
+    caption = models.CharField(max_length=250, default='')
     def __unicode__(self, ):
         return self.text
     

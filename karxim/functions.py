@@ -15,34 +15,6 @@ def add_csrf(request, **kwargs):
     c.update(csrf(request))
     return c
 
-
-def Signature(request):
-    """ return user signature if it exists """
-    user= request.user
-    try:
-        signature = user.signature.signature
-    except:
-        signature = ""
-    return signature
-
-def getSignature(user):
-    """ return user signature if it exists else gives default """
-    try:
-        signature = user.signature.signature
-        print "sig: "+signature
-    except:
-        signature = "User"+str(user.pk)
-    return signature
-
-def tryRememberMe(request):
-    """ try logging in user if there's cookies """
-    try:
-        username = request.get_signed_cookie('username')
-        password = request.get_signed_cookie('password')
-        user = auth.authenticate(username=username, password=password)
-        auth.login(request, user)
-    except:
-        pass
     
 def hours(created):
     """ returns difference in hours between now and a datetime object """

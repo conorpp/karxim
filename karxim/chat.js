@@ -19,7 +19,7 @@ var redis = require('socket.io/node_modules/redis');
 var sub = redis.createClient();
 var SOCKETS = {};
 
-//Configure socket.io to store cookie set by Django
+//Configure socket.io to store cookies
 io.configure(function(){
     io.set('authorization', function(data, accept){
         
@@ -41,7 +41,7 @@ io.sockets.on('connection', function(socket){
         SOCKETS['socket'+data['userId']] = this;
     });*/
     
-    /* subscribe redis (sub) and socket to chatroom (Cpk) */
+    /* subscribe redis (sub) and socket to chatroom (pk) */
     socket.rooms = [];
     socket.on('joinChat', function(data){
         try{
@@ -49,9 +49,11 @@ io.sockets.on('connection', function(socket){
         }catch(e){
             console.log('join chat failed: ', e); return;
         }
-	if (socket.rooms.indexOf(pk) != -1) return;
+	if (socket.rooms.indexOf(pk) != -1) return;  //don't bother if already subscribed
+	
 	for (i in this.rooms) {
-	    socket.leave(this.rooms[i])
+	    socket.leave(this.rooms[i])		//ensure only subscribed to one room
+	    this.rooms.splice(i,1);		
 	}
 	sub.subscribe(pk); 
         socket.join(pk);
@@ -75,14 +77,12 @@ function publish(channel, data){
     switch(data['TYPE']){
 	
 	case 'update':
-	    if (data['update']['status'] == 'GLOBAL') {
 		GLOBAL_UPDATE(channel, data);
-	    }else{
-		//CLIENT_UPDATE(channel, data);
-	    }
+		//??CLIENT_UPDATE(channel, data);
 	break;
 	
 	case 'message':
+	    console.log(data);
 	    SEND_MESSAGE(channel, data);
 	break;
     
@@ -114,9 +114,16 @@ function publish(channel, data){
 }*/
 
 function SEND_MESSAGE(channel, data){
-    console.log('sending "' +data['message']+ '" through channel', channel);
+    console.log('sending message through channel', channel);
     io.sockets.in(channel).emit('getMessage', data);
 }
+
+//not implemented yet
+function GLOBAL_UPDATE(channel, data){
+    console.log('GLOBAL update through channel', channel);
+    io.sockets.in(channel).emit('update', data);
+}
+
 /* NOT USED
 function CLIENT_UPDATE(channel, data){
     for (var id in data['update']['users']) {
@@ -129,8 +136,3 @@ function CLIENT_UPDATE(channel, data){
 	}
     }
 }*/
-
-function GLOBAL_UPDATE(channel, data){
-    console.log('GLOBAL update "' +data['update']['message']+ '" through channel', channel);
-    io.sockets.in(channel).emit('update', data);
-}

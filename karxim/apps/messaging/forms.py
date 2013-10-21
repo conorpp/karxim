@@ -2,24 +2,43 @@ from django import forms
 from django.utils import timezone
 from karxim.apps.messaging.models import Discussion, Message
 from karxim.functions import cleanHtml, getDistance
+from django.core import signing
 
 class NewDiscussionForm(forms.ModelForm):
-    name = forms.CharField(max_length = 120, required = False)
+    admin = forms.CharField(max_length = 120, required = False)
+    title = forms.CharField(max_length = 120, required = False)
+
     class Meta:
         model = Discussion
-        fields = ('lat', 'lng', 'name')
-    
+        fields = ('lat', 'lng', 'admin','title')
+        
+    def setFields(self, **kwargs):
+        """
+        set fields manually.
+        session must be decrypted
+        """
+        self.session = kwargs.get('chatsession',None)
+
     def clean(self):
         """validation"""
-        print self.cleaned_data
+        #print 'cleaned',self.cleaned_data
         if any(self.errors):
             return
         self.error = False
-        self.name = self.cleaned_data.get('name', 'hacker')
-        try:
-            c = Discussion.objects.filter(name = self.cleaned_data['name'], created__gte=timezone.now()-timezone.timedelta(hours=1)).count()
-            if c>4: self.error = 'This same discussion has been made 4 times recently'
-        except:pass
+        self.admin = self.cleaned_data.get('name', 'hacker')            
+        self.title = self.cleaned_data.get('title', 'hacker talk')
+        
+        if self.session is None:
+            self.error = 'Please allow cookies or refresh the page to continue.'
+        else:
+            try:
+                c = Discussion.objects.filter(
+                    sessionid = self.session,
+                    created__gte = timezone.now() - timezone.timedelta(minutes=1)
+                ).count()
+                if c>2:
+                    self.error = 'Please take your time and try again in one minute'
+            except:pass
         
         if self.error:
             raise forms.ValidationError(self.error)
@@ -31,7 +50,9 @@ class NewDiscussionForm(forms.ModelForm):
         self.discussion = Discussion.objects.create(
             lat = self.cleaned_data['lat'],
             lng = self.cleaned_data['lng'],
-            name = self.name
+            title = self.title,
+            admin = self.admin,
+            sessionid = self.session
         )
 
         return self.discussion
@@ -48,49 +69,57 @@ class NewMessageForm(forms.ModelForm):
     
     def setFields(self,**kwargs):
         self.replyTo = kwargs.get('replyTo', None)
+        self.session = kwargs.get('chatsession',None)
         
     def clean(self):
         """validation"""
         if any(self.errors):
             return
-        self.error = False
+        self.error = None
         print 'cleaned data',self.cleaned_data
         message = self.cleaned_data['text']
         if not message: return
         
+        if self.session is None:
+            self.error = 'Please allow cookies or refresh the page to continue.'
+            
         self.name = self.cleaned_data.get('username', 'hacker')
         if self.name.strip() == '': self.name = 'hacker'
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
         
-        try:
-            self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
-        except:
-            self.distance = None
-            
-        self.text = cleanHtml(message)
-        
-        try:
-            c = Message.objects.filter(
-                username = self.name,
-                text=self.text,
-                created__gte=timezone.now()-timezone.timedelta(hours=2),
-                discussion = self.discussion
-                )
-            print 'SPAMM',c.count()
-            if c.count()>4:
-                self.error = 'You\'re sending the same message too much'
-        except ValueError:pass
-        
-        if self.replyTo:
-            self.parent = self.discussion.message_set.get(pk=self.replyTo)
-            self.stem = self.parent.stem +1
+        if self.session is None:
+            self.error = 'Please allow cookies or refresh your page to continue.'
         else:
-            self.stem = 0
+            try:
+                c = Message.objects.filter(
+                    sessionid = self.session,
+                    created__gte = timezone.now() - timezone.timedelta(seconds=10)
+                ).count()
+                if c>2:
+                    self.error = 'Please take your time with those messages.'
+            except:pass
+            
+        if self.error is None:
+            
+            try:
+                self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
+            except:
+                self.distance = None
+                
+            self.text = cleanHtml(message)
+            
+            if self.replyTo:
+                self.parent = self.discussion.message_set.get(pk=self.replyTo)
+                self.stem = self.parent.stem +1
+            else:
+                self.stem = 0
+                self.parent = None
         
-        if self.error:
+        else:
             raise forms.ValidationError(self.error)
+        
         return self.cleaned_data
         
     def getError(self, ):
@@ -104,23 +133,38 @@ class NewMessageForm(forms.ModelForm):
             self.parent.replies += 1
             self.parent.newReplies += 1
             self.parent.save()
-            self.message = Message.objects.create(text=self.text, discussion=self.discussion, stem=self.stem, parent=self.parent )
+            self.message = Message.objects.create(discussion=self.discussion)
             self.message.updateActive()
         else:
-            self.message = Message.objects.create(text=self.text, discussion=self.discussion, stem=0)
-        self.newPk = self.message.pk
+            self.message = Message.objects.create(discussion=self.discussion)
+        self.newPk = self.message.pk        #need pk before returning
         
         return self.message
 
-    def commit(self):
+    def commit(self):                       #for speed
         self.message.username = self.name
-            
+        self.message.text = self.text
+        self.message.stem = self.stem
+        self.message.parent = self.parent
+        self.message.sessionid = self.session
         if self.distance: self.message.distance = self.distance
         self.message.save()
         self.discussion.save()
         return self.message
 
+#client spam bot tester (currently protected from this)
+"""
 
+var i = 0;
+    setInterval(
+        function(){
+            i++;
+            $('#send').siblings('textarea').val('spam'+i);
+            $('#name').val('spamky'+i);
+            $('#nameSave').trigger('click');
+            $('#send').trigger('click');
+        }, 300);
 
+"""
 
         

@@ -49,7 +49,7 @@ class MessageSerializer():
         self.messages = messages
         self.order_by = kwargs.get('order_by','-lastActive')
         self.nests = 20
-        self.kind = kwargs.get('kind', 'html')
+        self.html = kwargs.get('html', True)
         self.fields =()
         self.methods=(
             
@@ -62,9 +62,9 @@ class MessageSerializer():
         except AttributeError:
             messages = [self.assignFields(self.messages)]                  #object
         
-        kind = kwargs.get('kind', 'json')
-        if kind=='json': return simplejson.dumps(messages)
-        else: return comments
+        json = kwargs.get('json', True)
+        if json: return simplejson.dumps(messages)
+        else: return messages
     
     def serialize(self, nestedMessages):
         parents = nestedMessages.order_by(self.order_by)
@@ -84,7 +84,7 @@ class MessageSerializer():
             fields[field] = getattr(instance, field)
         for method in self.methods:
             fields[method[0]] = getattr(instance, method[1])()
-        if self.kind == 'html':
+        if self.html:
             fields['html'] = render_to_string('parts/message.html', {'m':instance})
         return fields
     

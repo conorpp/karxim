@@ -22,6 +22,7 @@ var K = {
         if(Map.newMark)Map.removeLayer(Map.newMark);
         var markOptions = {    
             draggable:options.draggable,
+            riseOnHover:true,
             icon: L.icon({
                 iconUrl:iconURL,
                 iconAnchor:[15, 35],
@@ -181,7 +182,7 @@ var AJAXF = {
             data: {
                 'lat': lat,
                 'lng': lng,
-                'name': name,
+                'title': name,
                 'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             },
             dataType:'json',
