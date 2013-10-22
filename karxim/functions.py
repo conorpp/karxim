@@ -43,7 +43,7 @@ def getDistance(lat1, lng1, lat2, lng2):
         miles = 0.01
     return miles
 
-def set_cookie(response, key, value, days_expire = 7, signed=True):
+def set_cookie(response, key, value, days_expire = 7, signed=False):
     """ sets a signed cookie """
     if days_expire is None:
       max_age = 365 * 24 * 60 * 60  #one year

@@ -1,4 +1,12 @@
 /* Namespaces */
+/*
+    Map - the MapBox map object.
+    K - main functions + data
+    T - templates
+    Cookie - managing cookies
+    Messaging/Message - Messaging + node functions
+*/
+
 var Map;
 var K = {
     
@@ -64,7 +72,6 @@ var K = {
                 Map.panTo(this.getLatLng())
             });
             popup.on('popupclose', function(){
-                console.log('FIRED');
                 K.removeNewMark();
             });
         }
@@ -72,6 +79,7 @@ var K = {
     removeNewMark: function(){
         Map.removeLayer(Map.newMark);
     },
+    /* display error on new marker */
     setNewMarkError:function(error){
         var popup = new L.Popup().setContent('<div class=\"errors\">'+error+'</div>');
         Map.newMark.bindPopup(popup);
@@ -98,6 +106,7 @@ var K = {
     adminOff: function(){
         $('#topSpace').find('.admin').remove();
     },
+    
     /* displays standard message for miliseconds */
     popup: function(title, message, millis){
         if (message == undefined) message = title;
@@ -108,6 +117,16 @@ var K = {
         popup.find('.popupMessage').html(message);
         popup.show('fast');
         //setTimeout(function(){popup.hide('fast')},millis);
+    },
+
+    /* displays error in error locations for miliseconds */
+    showError: function(error, millis){
+        if (millis==undefined) millis = 1500;
+        $('.errors').html(error);
+        $('.errors').show('fast');
+        setTimeout(function(){
+            $('.errors').hide('slow');
+        },millis);
     },
     
     /* add checkboxes to messages and show done button */
@@ -134,15 +153,6 @@ var K = {
         if (clients.length) {
             AJAXF.cAct(clients, K.cAction, K.discussion);
         }
-    },
-    
-    showError: function(error, millis){
-        if (millis==undefined) millis = 1400;
-        $('.errors').html(error);
-        $('.errors').show('fast');
-        setTimeout(function(){
-            $('.errors').hide('slow');
-        },millis);
     }
 
 };

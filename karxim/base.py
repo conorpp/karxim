@@ -1,10 +1,14 @@
+import hmac
 
+from django.utils.hashcompat import sha_constructor, sha_hmac
 from django.template.loader import render_to_string
 
 from karxim.functions import set_cookie
 from karxim.apps.messaging.views import REDIS
-from karxim.settings import SOCKET_URL
+from karxim.settings import SOCKET_URL, SECRET_KEY
 
+
+KEY = sha_constructor(SECRET_KEY).digest()
 
 class ChatMiddleware():
 
@@ -19,7 +23,9 @@ class ChatMiddleware():
         except Exception as e:
             session = REDIS.get('users')
             REDIS.set('users',int(session)+1)
-            set_cookie(response, 'chatsession', session, days_expire = 20, signed=True)
+            signed_sessionid = hmac.new(KEY, msg=session, digestmod=sha_hmac).hexdigest()
+            set_cookie(response, 'chatsession', session+':'+signed_sessionid, days_expire = 20)
+            print ' NEW CHATSESSION SET '
             return response
             
 

@@ -8,6 +8,7 @@
 //$ sudo apt-get install nodejs
 //$ npm install socket.io
 //$ npm install cookie
+//$ npm install crypto
 
 var Settings = require('./static_admin/settings/settings');
 console.log('------------------------------------------------\n');
@@ -24,6 +25,12 @@ var redis = require('socket.io/node_modules/redis');
 var sub = redis.createClient(Settings.RedisPort);
 var SOCKETS = {};
 
+var crypto = require('crypto');
+var hash = crypto.createHash('sha1');		//for unsigning chat sessionid's
+hash.update(Settings.secretKey);
+const unsign_key = hash.digest();
+
+
 //Configure socket.io to store cookies
 io.configure(function(){
     io.set('authorization', function(data, accept){
@@ -38,14 +45,17 @@ io.configure(function(){
 });
 
 io.sockets.on('connection', function(socket){
-    console.log()
     /* keep running array of connected sockets NOT USED
     socket.on('setId', function(data){
         console.log('USER ID : ', data['userId']);
         this.userId = data['userId'];
         SOCKETS['socket'+data['userId']] = this;
     });*/
-    console.log('COOKIES', socket.handshake.cookie);
+    try {
+	socket.sessionid = PARSE_SESSION(socket.handshake.cookie.chatsession);
+    } catch(e) {
+	console.log('session validation fail: ',e);
+    }
     
     /* subscribe redis (sub) and socket to chatroom (pk) */
     socket.rooms = [];
@@ -128,6 +138,22 @@ function SEND_MESSAGE(channel, data){
 function GLOBAL_UPDATE(channel, data){
     console.log('GLOBAL update through channel', channel);
     io.sockets.in(channel).emit('update', data);
+}
+
+function PARSE_SESSION(session) {
+    var hmac = crypto.createHmac('sha1', unsign_key);
+    var values = session.split(':');
+    
+    hmac.update(values[0]);
+    
+    if (values[1] == (hmac.digest('hex'))) {
+	console.log('Valid match! ');
+	console.log(values[1]+' == '+hmac.digest('hex'));
+	console.log('unsigned value: ', values[0]);
+	return values[0];
+    }else{
+	throw new UserException('Invalid session');
+    }
 }
 
 /* NOT USED
