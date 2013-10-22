@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+
 from math import radians, cos, sin, asin, sqrt
-import datetime , re
+import datetime , re, hmac
 
 from lxml.html.clean import Cleaner, autolink_html, clean_html
 from bs4 import BeautifulSoup
 
+from django.utils.hashcompat import sha_constructor, sha_hmac
 from django.core.context_processors import csrf 
 from django.utils import timezone 
 from django.contrib import auth
-
+from karxim.settings import SECRET_KEY
 def add_csrf(request, **kwargs):
     """ adds csrf token to a dict{} and returns it """
     c=dict(**kwargs)
@@ -81,7 +83,23 @@ def cleanHtml(text):
             atag['href'] = 'http://'+atag['href']
     return ''.join(map(str,text.body.contents))
 
-
+KEY = sha_constructor(SECRET_KEY).digest()
+def validKey(signedValue, option='notavalue'):
+    """
+        Check if signed cookie is legit.
+        returns value if it is, else returns False
+    """
+    try:
+        values = signedValue.split(':')
+        valid_sign = hmac.new(KEY, msg=values[0], digestmod=sha_hmac).hexdigest()
+        if valid_sign == values[1]:
+            return values[0]
+        else:
+            return False
+    except:
+        if option!='notavalue':
+            return option
+        else: raise KeyError('The key is not valid')
 
 
 

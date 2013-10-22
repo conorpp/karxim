@@ -9,7 +9,7 @@ from django.utils import simplejson
 from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
-from karxim.functions import set_cookie
+from karxim.functions import set_cookie, validKey
 from karxim.settings import redisPort, webDomain
 
 REDIS = redis.StrictRedis(host=webDomain, port=redisPort, db=0)
@@ -28,9 +28,8 @@ def start(request):
     """ creates discussion and returns it """
     if request.method == 'POST':
         print 'POST ',request.POST
-        print 'cookie', request.COOKIES.get('chatsession',None)
         form = NewDiscussionForm(request.POST)
-        form.setFields(chatsession=request.get_signed_cookie('chatsession',None))
+        form.setFields(chatsession=validKey(request.COOKIES.get('chatsession',None),None))
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
@@ -56,7 +55,7 @@ def messages(request):
     except:pass
     
     try:
-        sessionid = request.get_signed_cookie('chatsession')
+        sessionid = validKey(request.COOKIES['chatsession'])
         if d.bannedsessions.filter(sessionid=sessionid).count():
             error = 'You have been banned from this discussion'
             return HttpResponse(simplejson.dumps({'error':error}))
@@ -84,7 +83,7 @@ def send(request):
         print 'request : ',request.POST
         form = NewMessageForm(request.POST, request.COOKIES)
         form.setFields(replyTo = request.POST.get('replyTo',None),
-                       chatsession=request.get_signed_cookie('chatsession',None))
+                       chatsession=validKey(request.COOKIES.get('chatsession',None),None))
         if not form.is_valid():
             data = simplejson.dumps({'error':form.error})
             return HttpResponse(data)
