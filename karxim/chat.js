@@ -7,16 +7,21 @@
 //$ sudo apt-get update
 //$ sudo apt-get install nodejs
 //$ npm install socket.io
-//$ npm install cookie 
+//$ npm install cookie
+
+var Settings = require('./static_admin/settings/settings');
+console.log('------------------------------------------------\n');
+console.log('Starting up Node.  Here is the config : \n',Settings);
+console.log('\n------------------------------------------------\n');
 
 var http = require('http');
-var server = http.createServer().listen(4000);
+var server = http.createServer().listen(Settings.MessagePort, Settings.hostIP);
 var io = require('socket.io').listen(server);
 var cookie_reader = require('cookie');
 var querystring = require('querystring');
 
 var redis = require('socket.io/node_modules/redis');
-var sub = redis.createClient();
+var sub = redis.createClient(Settings.RedisPort);
 var SOCKETS = {};
 
 //Configure socket.io to store cookies
@@ -33,13 +38,14 @@ io.configure(function(){
 });
 
 io.sockets.on('connection', function(socket){
-    
+    console.log()
     /* keep running array of connected sockets NOT USED
     socket.on('setId', function(data){
         console.log('USER ID : ', data['userId']);
         this.userId = data['userId'];
         SOCKETS['socket'+data['userId']] = this;
     });*/
+    console.log('COOKIES', socket.handshake.cookie);
     
     /* subscribe redis (sub) and socket to chatroom (pk) */
     socket.rooms = [];

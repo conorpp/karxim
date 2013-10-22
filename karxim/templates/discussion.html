@@ -37,10 +37,10 @@
   </div>
 </div>
 <script>
-    COMMIT = false;
+    Settings.createMap = false;
+    K.discussion = {{pk|safe}};
+    Message.subscribe(K.discussion);
     $(document).ready(function(){
-        K.discussion = {{pk|safe}};
-        Message.subscribe(K.discussion);
         {% if admin %}
             K.admin();
         {% endif %}

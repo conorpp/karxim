@@ -64,7 +64,13 @@ input[type="checkbox"]{
 .left2{margin-left: 2em}
 .left4{margin-left: 4em}
 .left6{margin-left: 6em}
-
+.right2{margin-right: 2em}
+.right4{margin-right: 4em}
+.right6{margin-right: 6em}
+.level1{z-index:1}
+.level2{z-index:2}
+.level3{z-index:3}
+.level4{z-index:4}
 
 button{
     border:none;

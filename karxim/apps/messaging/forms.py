@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from karxim.apps.messaging.models import Discussion, Message
+from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin
 from karxim.functions import cleanHtml, getDistance
 from django.core import signing
 
@@ -57,10 +57,13 @@ class NewDiscussionForm(forms.ModelForm):
             lat = self.lat,
             lng = self.lng,
             title = self.title,
-            admin = self.admin,
-            sessionid = self.session
+            sessionid = self.session,
+            admin = self.admin
         )
-
+        if self.admin:
+            a = Admin.objects.create(sessionid = self.session)
+            self.discussion.admins.add(a)
+            self.discussion.save()
         return self.discussion
     
  

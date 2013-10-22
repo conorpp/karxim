@@ -64,7 +64,9 @@ class MessageSerializer():
         
         json = kwargs.get('json', True)
         data = {'messages':messages}
-        if json: return simplejson.dumps(data)
+        if json:
+            print 'RETURNING JSON'
+            return simplejson.dumps(data)
         else: return data
     
     def serialize(self, nestedMessages):

@@ -4,9 +4,18 @@ from django.contrib.auth.models import User
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.contrib.contenttypes import generic
 
+class BannedSession(models.Model):
+    sessionid = models.CharField(max_length=100, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+class Admin(models.Model):
+    sessionid = models.CharField(max_length=100, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
 
 class Discussion(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
+    bannedsessions = models.ManyToManyField(BannedSession)
+    admins = models.ManyToManyField(Admin)
     sessionid = models.CharField(max_length=100, db_index=True)
     
     title = models.CharField(max_length=500)
@@ -44,9 +53,7 @@ class Discussion(models.Model):
         self.newComments = 0
         self.save()
         
-
         
-    
 
 class Message(models.Model):
     user = models.ForeignKey(User, blank=True, null=True)
@@ -89,4 +96,8 @@ class Message(models.Model):
         except:
             print 'all done traversing parents'
 
+    
+    
+    
+    
     

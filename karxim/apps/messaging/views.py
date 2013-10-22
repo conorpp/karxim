@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson
 
-from karxim.apps.messaging.models import Discussion
+from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
 from karxim.functions import set_cookie
@@ -21,7 +21,6 @@ if REDIS.get('users') is None:      #for session id's
 def home(request):
     context = {
         'markers': DiscussionSerializer(Discussion.objects.order_by('-lastActive')[:250]).data(),
-        'templates':render_to_string('includeTemplates.html')
     }
     return render(request, 'index.html', context)
 
@@ -48,12 +47,23 @@ def messages(request):
     
     pk = request.POST['pk']
     admin=False
+    d = Discussion.objects.get(pk=pk)
+    
     try:
         adminid = request.get_signed_cookie('admin')
-        if pk == adminid:
+        if adminid == d.sessionid:
             admin = True
-    except ArithmeticError:pass
-    d = Discussion.objects.get(pk=pk)
+    except:pass
+    
+    try:
+        sessionid = request.get_signed_cookie('chatsession')
+        if d.bannedsessions.filter(sessionid=sessionid).count():
+            error = 'You have been banned from this discussion'
+            return HttpResponse(simplejson.dumps({'error':error}))
+    except:
+        error = 'Please allow cookies or refresh the page'
+        return HttpResponse(simplejson.dumps({'error':error}))
+    
     messages = d.message_set.all()
     print 'admin status: ', admin
     if admin:
@@ -94,7 +104,6 @@ def send(request):
                 'age':'just now'
             },
             })
-        print 'before json data ',data
         
         REDIS.publish(pk, simplejson.dumps(data))
         
@@ -116,13 +125,11 @@ def discussion(request,pk='0'):
         data = data = MessageSerializer(messages).data(json = False)
         data['title'] = d.title
         data['pk'] = pk
-        data['templates'] = render_to_string('includeTemplates.html')
         adminid = request.get_signed_cookie('admin', None)
         admin = False
-        print 'id ', adminid
-        print 'd id ', d.sessionid
+
         if adminid is not None:
-            if unicode(adminid) == unicode(d.sessionid):
+            if adminid == d.sessionid:
                 admin = True
                 
         print 'result ' , admin
@@ -132,6 +139,33 @@ def discussion(request,pk='0'):
         return render(request,'discussion.html', data)
     except:
         return HttpResponse(status=404)
+    
+def client(request):
+    """ for changing status of client (admin, banning, ect) """
+    pk = request.POST['pk']
+    messages = simplejson.loads(request.POST['clients'])
+    action = request.POST['action']
+    print 'GOT CLIENT CHANGE REQUEST ', request.POST
+    d = Discussion.objects.get(pk=pk)
+    
+    messages = d.message_set.filter(pk__in = messages)
+    
+    sessions = []
+    if action == 'ban':
+        for m in messages:
+            sessionid = m.sessionid
+            b = BannedSession.objects.create(sessionid=sessionid)
+            d.bannedsessions.add(b)
+            d.save()
+            data = {'TYPE':'ban', 'sessionid':sessionid}
+            REDIS.publish(pk, simplejson.dumps(data))
+    #do something with redis pub sub and sessionid attribute in node
+    
+    return HttpResponse()
+    
+    
+    
+
     
     
     

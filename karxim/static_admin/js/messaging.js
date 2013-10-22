@@ -1,8 +1,3 @@
-var Settings = {
-    host:'http://localhost:8000',
-    simplehost:'http://localhost',
-    MessagePort:4000
-};
 
 var Message = {
     
@@ -61,22 +56,16 @@ var Message = {
     
 };
 
-$(document).ready(function(){
 
-    Message.connect();
+Message.connect();
 
-    Message.socket.on('getMessage', function(data) {
-        var pk = data['pk'];
-        var message = data['html'];
-        if (data['replyTo']) {
-            $('#dFill').find('#message'+data['replyTo']).after(message);
-        }else $('#dFill').prepend(message);
+Message.socket.on('getMessage', function(data) {
+    var pk = data['pk'];
+    var message = data['html'];
+    if (data['replyTo']) {
+        $('#dFill').find('#message'+data['replyTo']).after(message);
+    }else $('#dFill').prepend(message);
         
-        $('#message'+pk).hide();
-        $('#message'+pk).show(100);
-        
-
-        
-    });
-    
-});
+    $('#message'+pk).hide();
+    $('#message'+pk).show(100);        
+});    

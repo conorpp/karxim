@@ -23,6 +23,9 @@ DATABASES = {
 }
 redisPort = 6379
 webDomain = 'localhost'
+#web socket url
+SOCKET_URL = 'http://localhost:4000/socket.io/socket.io.js'
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
@@ -111,6 +114,16 @@ WSGI_APPLICATION = 'karxim.wsgi.application'
 
 TEMPLATE_DIRS = (
     os.path.join(SITE_ROOT, 'templates')
+)
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',            #not sure if these are necessary
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
+    'karxim.base.base',
 )
 
 INSTALLED_APPS = (
