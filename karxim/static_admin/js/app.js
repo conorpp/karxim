@@ -4,7 +4,7 @@ $(document).ready(function(){
     
     K.create(Settings.createMap);
 
-    K.popup('testing out the pop up.','this is the message',2000);
+    //K.popup('testing out the pop up.','this is the message',2000);
     K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);

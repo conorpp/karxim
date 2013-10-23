@@ -59,7 +59,7 @@ class MessageSerializer():
         
         try:
             messages = self.serialize(self.messages.filter(stem=0))    #queryset
-        except AttributeError:
+        except Exception as e:
             messages = [self.assignFields(self.messages)]                  #object
         
         json = kwargs.get('json', True)

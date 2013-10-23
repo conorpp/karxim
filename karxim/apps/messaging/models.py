@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connection
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.humanize.templatetags.humanize import naturaltime
@@ -83,7 +83,7 @@ class Message(models.Model):
         """ updates parent line to be active """
         try:
             parent = self.parent
-            safe = 100
+            safe = 0
             self.discussion.lastActive = timezone.now()
             self.discussion.save()
             while parent:
@@ -91,9 +91,9 @@ class Message(models.Model):
                 parent.save()
                 parent = parent.parent
                 safe+=1
-                if safe > 100:
+                if safe > 50:
                     break
-        except:
+        except Exception as e:
             print 'all done traversing parents'
 
     

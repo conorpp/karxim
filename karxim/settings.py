@@ -21,8 +21,8 @@ DATABASES = {
         'PORT': '',                             # Set to empty string for default.
     }
 }
-redisPort = 6379
-webDomain = 'localhost'
+REDIS_PORT = 6379
+WEB_DOMAIN = 'localhost'
 #web socket url
 SOCKET_URL = 'http://localhost:4000/socket.io/socket.io.js'
 

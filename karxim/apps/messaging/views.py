@@ -4,15 +4,13 @@ from django.shortcuts import render, HttpResponse, HttpResponseRedirect, render_
 from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import simplejson
+from django.utils import simplejson, timezone
 
 from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
-from karxim.functions import set_cookie, validKey
-from karxim.settings import redisPort, webDomain
-
-REDIS = redis.StrictRedis(host=webDomain, port=redisPort, db=0)
+from karxim.functions import set_cookie, validKey, pubLog, REDIS
+from karxim.settings import WEB_DOMAIN, REDIS_PORT
 
 if REDIS.get('users') is None:      #for session id's
     REDIS.set('users','0')
@@ -43,7 +41,6 @@ def start(request):
 
 def messages(request):
     """ loads all messages for a discussion pk"""
-    
     pk = request.POST['pk']
     admin=False
     d = Discussion.objects.get(pk=pk)
@@ -62,7 +59,6 @@ def messages(request):
     except:
         error = 'Please allow cookies or refresh the page'
         return HttpResponse(simplejson.dumps({'error':error}))
-    
     messages = d.message_set.all()
     print 'admin status: ', admin
     if admin:
@@ -71,6 +67,7 @@ def messages(request):
         data = simplejson.dumps(data)
     else:
         data = MessageSerializer(messages).data()
+
     response = HttpResponse(data)
     
     return response
@@ -78,12 +75,13 @@ def messages(request):
 
 def send(request):
     """ recieving and processing messages from chats """
-    try:        
+    try:
         pk = request.POST['pk']
         print 'request : ',request.POST
         form = NewMessageForm(request.POST, request.COOKIES)
         form.setFields(replyTo = request.POST.get('replyTo',None),
                        chatsession=validKey(request.COOKIES.get('chatsession',None),None))
+
         if not form.is_valid():
             data = simplejson.dumps({'error':form.error})
             return HttpResponse(data)
@@ -100,16 +98,16 @@ def send(request):
                 'text':form.text,
                 'stem':form.stem,
                 'distance': form.distance,
-                'age':'just now'
+                'age':timezone.now().strftime('%I:%M %p')
             },
             })
-        
+
         REDIS.publish(pk, simplejson.dumps(data))
-        
         form.commit()   #moved as many db hits until after publish so clients get message quicker.
         return HttpResponse(status=200)
     
-    except ArithmeticError:
+    except Exception as e:
+        pubLog('VIEW \'send\' ERROR : '+str(e) )
         print str(e)
         return HttpResponse(status=500)    
             

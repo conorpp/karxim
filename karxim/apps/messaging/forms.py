@@ -17,7 +17,7 @@ class NewDiscussionForm(forms.ModelForm):
     def setFields(self, **kwargs):
         """
         set fields manually.
-        session must be decrypted
+        session must be decrypted before set
         """
         self.session = kwargs.get('chatsession',None)
 
@@ -79,7 +79,7 @@ class NewMessageForm(forms.ModelForm):
     def setFields(self,**kwargs):
         self.replyTo = kwargs.get('replyTo', None)
         self.session = kwargs.get('chatsession',None)
-        
+
     def clean(self):
         """validation"""
         if any(self.errors):
@@ -87,7 +87,8 @@ class NewMessageForm(forms.ModelForm):
         self.error = None
         print 'cleaned data',self.cleaned_data
         message = self.cleaned_data['text']
-        if not message: return
+
+        if not message: self.error = 'You need to send a message'
         
         if self.session is None:
             self.error = 'Please allow cookies or refresh the page to continue.'
@@ -111,14 +112,11 @@ class NewMessageForm(forms.ModelForm):
             except:pass
             
         if self.error is None:
-            
             try:
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
             except:
                 self.distance = None
-                
             self.text = cleanHtml(message)
-            
             if self.replyTo:
                 self.parent = self.discussion.message_set.get(pk=self.replyTo)
                 self.stem = self.parent.stem +1
@@ -143,7 +141,6 @@ class NewMessageForm(forms.ModelForm):
             self.parent.newReplies += 1
             self.parent.save()
             self.message = Message.objects.create()
-            self.message.updateActive()
         else:
             self.message = Message.objects.create()
         self.newPk = self.message.pk        #need pk before returning
@@ -158,6 +155,7 @@ class NewMessageForm(forms.ModelForm):
         self.message.parent = self.parent
         self.message.sessionid = self.session
         if self.distance: self.message.distance = self.distance
+        self.message.updateActive()
         self.message.save()
         self.discussion.save()
         return self.message

@@ -23,6 +23,7 @@ var querystring = require('querystring');
 
 var redis = require('socket.io/node_modules/redis');
 var sub = redis.createClient(Settings.RedisPort);
+sub.subscribe('logs'); 
 var SOCKETS = {};
 
 var crypto = require('crypto');
@@ -89,17 +90,21 @@ io.sockets.on('connection', function(socket){
 sub.on('message', publish);
 function publish(channel, data){ 
     data = JSON.parse(data);
-    
+    //console.log('data', data);
     switch(data['TYPE']){
 	
 	case 'update':
-		GLOBAL_UPDATE(channel, data);
-		//??CLIENT_UPDATE(channel, data);
+	    GLOBAL_UPDATE(channel, data);
+	    //??CLIENT_UPDATE(channel, data);
 	break;
 	
 	case 'message':
-	    console.log(data);
+	    //console.log(data);
 	    SEND_MESSAGE(channel, data);
+	break;
+    
+	case 'log':
+	    console.log('LOG : ', data['log']);
 	break;
     
 	default:
@@ -147,12 +152,13 @@ function PARSE_SESSION(session) {
     hmac.update(values[0]);
     
     if (values[1] == (hmac.digest('hex'))) {
-	console.log('Valid match! ');
+	console.log('Valid user connected! ');
 	console.log(values[1]+' == '+hmac.digest('hex'));
 	console.log('unsigned value: ', values[0]);
 	return values[0];
     }else{
-	throw new UserException('Invalid session');
+	console.log('Warning: Invalid user connected! ');
+	return false;
     }
 }
 

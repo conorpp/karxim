@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from math import radians, cos, sin, asin, sqrt
-import datetime , re, hmac
+import datetime , re, hmac, redis
 
 from lxml.html.clean import Cleaner, autolink_html, clean_html
-from bs4 import BeautifulSoup
+from BeautifulSoup import BeautifulSoup 
 
 from django.utils.hashcompat import sha_constructor, sha_hmac
 from django.core.context_processors import csrf 
-from django.utils import timezone 
+from django.utils import timezone , simplejson
 from django.contrib import auth
-from karxim.settings import SECRET_KEY
+from karxim.settings import SECRET_KEY, REDIS_PORT, WEB_DOMAIN
+
+REDIS = redis.StrictRedis(host=WEB_DOMAIN, port=REDIS_PORT, db=0)
+
+def pubLog(error=''):
+    data = {'TYPE':'log', 'log':error}
+    REDIS.publish('logs',simplejson.dumps(data))
+    return True
+
 def add_csrf(request, **kwargs):
     """ adds csrf token to a dict{} and returns it """
     c=dict(**kwargs)
@@ -69,19 +77,22 @@ def detectMobile(request):
         if b or v:
             return True 
         return False
-    
-    
+
 URL_REGEX = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
-_CLEANER = Cleaner(style=False, links=True, page_structure=False)
-def cleanHtml(text):
+cleaner = Cleaner(style=False, links=True, page_structure=False)
+
+def cleanHtml(text, add_target=True):
     """ cleans up html and auto links with target=_blank for forms """
-    text = _CLEANER.clean_html(autolink_html(text, [URL_REGEX], avoid_hosts=[]))
-    text = BeautifulSoup(text)
-    for atag in text.find_all('a'):                          #open in new tab
-        atag['target'] = '_blank'
-        if atag['href'].find('http',0,5) == -1:
-            atag['href'] = 'http://'+atag['href']
-    return ''.join(map(str,text.body.contents))
+    rawtext = cleaner.clean_html(autolink_html(text, [URL_REGEX], avoid_hosts=[]))
+    if add_target:
+        text = BeautifulSoup(''.join(rawtext))
+        for atag in text.findAll('a'):                          #open in new tab
+            pubLog('here\'s a link '+str(atag))
+            atag['target'] = '_blank'
+            if atag['href'].find('http',0,5) == -1:
+                atag['href'] = 'http://'+atag['href']
+        return ''.join(map(str,text.contents))
+    return rawtext
 
 KEY = sha_constructor(SECRET_KEY).digest()
 def validKey(signedValue, option='notavalue'):
