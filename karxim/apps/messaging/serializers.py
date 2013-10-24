@@ -9,7 +9,7 @@ class DiscussionSerializer():
         except:
             self.discs = [discs]
         self.fields = (     #for json
-            'lat','lng','pk'
+            'lat','lng','pk','admin'
         )
         #( 'key','methodname' )
         self.methods = (

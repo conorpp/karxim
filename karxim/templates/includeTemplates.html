@@ -8,7 +8,8 @@
   <h1>Move to a location</h1>
   <input type="text" placeholder=" Discussion title">{% csrf_token %}
   <button class="dSubmit background1">Save</button>
-  <div class="clearL fs18 checkbox">Admin <input type="checkbox" name="admin" title="Gives you admin capabilities for this discussion" checked> </div>
+  <div class="clearL fs18 checkbox private">Private <input type="checkbox" name="admin" title="Make this discussion password protected"> </div>
+  <input type="text" placeholder=" Discussion password" class="hide pw">
 </div>
 
 {#
@@ -34,9 +35,11 @@
 
 <div id="adminTemplate">
   <div class="admin pad5 left4 fright">
-    <button class="doneAdmin hide background1">Done</button>
+    <button class="cancelAdmin hide background5">Cancel</button>
+    <button class="doneAdmin hide background1">Submit</button>
     <button class="addAdmin background4">Add admin</button>
     <button class="removeClient background4">Remove client</button>
+    <div class="color0 adminAction hide abs"></div>
   </div>
 </div>
 
@@ -45,7 +48,7 @@
 #}
 <div id="popupTemplate">
 <div class="color0 background2">
-  <div class="abs fright clicker pad10 fs18">X</div>
+  <div class="abs fright clicker pad10 fs18 pX">X</div>
   <div class="background2 pad20 fleft popup">
     <p class=" popupTitle fs16"><!-- title --></p>
     <p class=" popupMessage"><!-- message --></p>
@@ -59,4 +62,18 @@
 <div id="selectClient" >
   <input type="checkbox" class="cSelect abs level2 fright right2">
 </div>
+
+{#
+    Announcement 
+#}
+<div id="annouceTemplate">
+  <div class="background4 color1 pad5">
+    <div class="textContainer rel announce">
+      <!-- message -->
+    </div>
+  </div>
+</div>
+
+
+
 </div>{# end hide #}

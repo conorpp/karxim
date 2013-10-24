@@ -1,8 +1,8 @@
 
 
 var AJAXF = {
-    makeDiscussion: function(latlng,title,admin) {
-        console.log('admin ', admin)
+    makeDiscussion: function(latlng,title,password) {
+
         $.ajax({
             type: 'POST',
             url: '/start/',
@@ -10,7 +10,7 @@ var AJAXF = {
                 'lat': latlng.lat,
                 'lng': latlng.lng,
                 'title': title,
-                'admin': admin,
+                'password': password,
                 'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             },
             dataType:'json',
@@ -22,7 +22,11 @@ var AJAXF = {
                     K.createMarker({
                         'content':data['html'],
                         'latlng':[data['lat'],data['lng']]
-                    })
+                    });
+                    if (data['admin']=='True') {
+                        K.popup('Limited Admin Abilities',
+                                'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
+                    }
                 }else{
                     K.setNewMarkError(data['error']);
                 }
@@ -44,12 +48,13 @@ var AJAXF = {
                 var fill = $('#dFill');
                 fill.html('');
                 console.log('got messages',data);
-                K.adminOff();
+                $('#sendWrap').find('textarea').attr('readonly', false);
+                
                 if (data['error']) {
                     K.showError(data['error'],20000);
                     console.log(data['error']);
-                    if (data['error']['ban']) {
-                        //ban user from chat subscription somehow
+                    if (data['ban']) {
+                        K.ban(pk);
                     }
                     return;
                 }

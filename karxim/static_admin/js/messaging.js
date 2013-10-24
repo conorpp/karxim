@@ -1,3 +1,5 @@
+/*  Namespace and event listeners for node messaging  */
+
 
 var Message = {
     
@@ -6,7 +8,7 @@ var Message = {
     */
     connect: function(){
         try {
-            Message.socket = io.connect(Settings.simplehost, {port: Settings.MessagePort});
+            Message.socket = io.connect(Settings.simpleHost, {port: Settings.MessagePort});
             Message.socket.on('connect', function(){
 
             }); 
@@ -52,6 +54,10 @@ var Message = {
     
     subscribe:function(pk){
         Message.socket.emit('joinChat', {pk:pk});
+    },
+    
+    leave:function(pk){
+        Message.socket.emit('leave', {pk:pk});
     }
     
 };
@@ -68,4 +74,22 @@ Message.socket.on('getMessage', function(data) {
         
     $('#message'+pk).hide();
     $('#message'+pk).show(100);        
-});    
+});
+
+Message.socket.on('update', function(data) {
+    console.log('data update',data);
+    K.announce(data['announcement']);   
+});
+
+Message.socket.on('ban', function(data) {
+    K.ban();   
+});
+
+Message.socket.on('admin', function(data) {
+    K.admin();
+    K.popup('You have been made an admin for this discussion',data['r'],3200);
+});
+
+Message.socket.on('private', function(data) {
+    K.popup(data['title'],data['message'],5200);
+});   

@@ -36,20 +36,23 @@ input[type="checkbox"]{
     height: 22px;
     margin-top:6px;
 }
-.color0{color:white}
-.background0{background:white}
+.color0{color:white}                        /* WHITE */
+.background0{background:white}              
 
-.color1{color:#78b677;}
+.color1{color:#78b677;}                     /* GREEN */
 .background1{background:#78b677;}
 
-.color2{color:#2b2b2b;}
+.color2{color:#2b2b2b;}                     /* DARK GREY */
 .background2{background:#2b2b2b;}
 
-.color3{color:#3A3A3A;}
+.color3{color:#3A3A3A;}                     /* MEDIUM GREY */
 .background3{background: #3A3A3A;}
 
-.color4{color:#5F5F5F;}
+.color4{color:#5F5F5F;}                     /* LIGHT GREY */
 .background4{background: #5F5F5F;}
+
+.color5{color:#E27171;}                     /* RED */
+.background5{background: #E27171;}
 
 .bold{font-weight: bold;}
 .fs6{font-size: .6em;}
@@ -119,6 +122,8 @@ button{
 }
 
 #popupSpace{
+    top:0px;
+    max-width: 24em;
     z-index: 5;
     box-shadow: -2px 2px 20px 1px #000
 }

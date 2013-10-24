@@ -5,10 +5,12 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.contrib.contenttypes import generic
 
 class BannedSession(models.Model):
+    user = models.ForeignKey(User, blank=True, null=True)
     sessionid = models.CharField(max_length=100, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
 
 class Admin(models.Model):
+    user = models.ForeignKey(User, blank=True, null=True)
     sessionid = models.CharField(max_length=100, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -36,9 +38,11 @@ class Discussion(models.Model):
     explicit = models.BooleanField(default=False)
     index = models.CharField(max_length=18, db_index=True, default='0')
     password = models.CharField(max_length=100, default='')
+    private = models.BooleanField(default = False)
     date = models.DateTimeField(auto_now_add=True)
     upVote = models.IntegerField(default=0, db_index=True)
     downVote = models.IntegerField(default=0)
+    
     def __unicode__(self):
         return self.title
 

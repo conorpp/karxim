@@ -99,7 +99,7 @@ var K = {
     },
     /* installs admin UI for current discussion */
     admin:function(){
-        console.log('admin ', T.admin);
+        K.adminOff();
         $('#topSpace').append(T.admin);
     },
     /* removes admin UI */
@@ -110,13 +110,12 @@ var K = {
     /* displays standard message for miliseconds */
     popup: function(title, message, millis){
         if (message == undefined) message = title;
-        if (millis == undefined) millis = 2500;
         var popup = $('#popupSpace');
         popup.html(T.popup);
         popup.find('.popupTitle').html(title);
         popup.find('.popupMessage').html(message);
         popup.show('fast');
-        //setTimeout(function(){popup.hide('fast')},millis);
+        if(millis!=undefined)setTimeout(function(){popup.hide('fast')},millis);
     },
 
     /* displays error in error locations for miliseconds */
@@ -131,12 +130,8 @@ var K = {
     
     /* add checkboxes to messages and show done button */
     cSelect: function(){
-        var messages = $('#dFill').find('.message');
-        messages.each(function(){
-            $(this).prepend(T.selectClient);
-            
-        });
-        $('#topSpace').find('.doneAdmin').show('fast');
+        $('#dFill').find('.message').prepend(T.selectClient);
+        $('#topSpace').find('.admin .hide').show('fast');
     },
     /* gets pk of message from each selected client */
     cAct: function(){
@@ -148,11 +143,26 @@ var K = {
             clients.push(pk);
         });
         $('input[type="checkbox"].cSelect').remove();
-        $('#topSpace').find('.doneAdmin').hide('fast');
-        console.log('selected clients', clients);
+        $('#topSpace').find('.admin .hide').hide('fast');
+        if(!K.cAction)return;
         if (clients.length) {
+            console.log('selected clients', clients);
             AJAXF.cAct(clients, K.cAction, K.discussion);
         }
+    },
+    
+    ban:function(pk){
+        if(pk!=undefined)Message.leave(pk);
+        $('#dFill').html('');
+        $('#sendWrap').find('textarea').attr('readonly', true);
+        K.popup('You have been removed from this discussion','',2001);
+    },
+    
+    announce:function(message){
+        var a = T.announce;
+        console.log('announce', a);
+        a.find('.announce').html(message);
+        $('#dFill').prepend(a.html());
     }
 
 };
@@ -168,7 +178,9 @@ $(document).ready(function(){
         
         popup: $('#popupTemplate').html(),
         
-        selectClient: $('#selectClient').html()
+        selectClient: $('#selectClient').html(),
+        
+        announce: $('#annouceTemplate')
     }
 });
 

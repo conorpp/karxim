@@ -3,8 +3,6 @@
 $(document).ready(function(){
     
     K.create(Settings.createMap);
-
-    //K.popup('testing out the pop up.','this is the message',2000);
     K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
@@ -15,16 +13,24 @@ $(document).ready(function(){
         console.log('new mark ',T.newMark);
         K.createMarker({'draggable':true,'start':true, 'content':T.newMark});
     });
+    $(document).on('click','.private > input',function(){
+        $('input.pw').toggle(100);
+    });
     $(document).on('click', '.dSubmit', function(){
         var title = $(this).siblings('input[type="text"]').val();
-        var admin = $(this).siblings("div.checkbox").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
+        var priv = $(this).siblings("div.checkbox").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
+        var pw = $.trim($(this).siblings('input.pw').val());
         if ($.trim(title)=='') return;
+        if (priv=='True' && pw == '') {
+            $('input.pw').focus();
+            return;
+        }
         var latlng = Map.newMark.getLatLng();
         var popup = new L.Popup().setContent(T.loadIcon);
         Map.newMark.closePopup();
         Map.newMark.bindPopup(popup);
         Map.newMark.openPopup();
-        AJAXF.makeDiscussion(latlng, title,admin);
+        AJAXF.makeDiscussion(latlng, title, pw);
     });
     $(document).on('click', '.join', function(){
         
@@ -33,7 +39,7 @@ $(document).ready(function(){
         var pk = this.id.replace('join','');
         var title = $('#discussion'+pk).find('h2').html();
         $('#dTitle').html(title);
-        $('#dLink').val(Settings.host+'/d/'+pk);
+        $('#dLink').val(Settings.nakedHost+'/d/'+pk);
         $('#titleLink').attr('href', Settings.host+'/d/'+pk);
         K.discussion = pk;
         AJAXF.getMessages(pk);
@@ -42,6 +48,10 @@ $(document).ready(function(){
     });
     $('#dX, #map').click(function(){
         $('#Discussion').hide('fast');
+    });
+    
+    $(document).on('click','.pX',function(){      //popup X
+        $('#popupSpace').hide();
     });
     
     $('#send').click(function(){
@@ -112,13 +122,19 @@ $(document).ready(function(){
     
     $(document).on('click','.addAdmin',function(){
         K.cAction = 'admin';
+        $('.adminAction').html('Adding an admin . . .');
         K.cSelect();
     });
     $(document).on('click','.removeClient',function(){
         K.cAction = 'ban';
+        $('.adminAction').html('Removing a client . . .');
         K.cSelect();
     });
     $(document).on('click', '.doneAdmin',function(){
+        K.cAct();
+    });
+    $(document).on('click', '.cancelAdmin',function(){
+        K.cAction=null;
         K.cAct();
     });
 });

@@ -9,7 +9,7 @@ from django.utils import simplejson, timezone
 from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
-from karxim.functions import set_cookie, validKey, pubLog, REDIS
+from karxim.functions import set_cookie,cookieValue, validKey, pubLog, REDIS
 from karxim.settings import WEB_DOMAIN, REDIS_PORT
 
 if REDIS.get('users') is None:      #for session id's
@@ -31,10 +31,7 @@ def start(request):
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
-            response = HttpResponse(data)
-            if form.admin:
-                set_cookie(response, 'admin', form.session, days_expire=7, signed=True)
-            return response
+            return HttpResponse(data)
         else:
             print form.error
             return HttpResponse(simplejson.dumps({'error':form.error}))
@@ -46,16 +43,16 @@ def messages(request):
     d = Discussion.objects.get(pk=pk)
     
     try:
-        adminid = request.get_signed_cookie('admin')
-        if adminid == d.sessionid:
-            admin = True
+        sessionid = validKey(request.COOKIES['chatsession'])
+        d.admins.get(sessionid = sessionid)
+        admin = True
     except:pass
     
     try:
         sessionid = validKey(request.COOKIES['chatsession'])
         if d.bannedsessions.filter(sessionid=sessionid).count():
             error = 'You have been banned from this discussion'
-            return HttpResponse(simplejson.dumps({'error':error}))
+            return HttpResponse(simplejson.dumps({'error':error,'ban':True}))
     except:
         error = 'Please allow cookies or refresh the page'
         return HttpResponse(simplejson.dumps({'error':error}))
@@ -139,26 +136,46 @@ def discussion(request,pk='0'):
     
 def client(request):
     """ for changing status of client (admin, banning, ect) """
+    
     pk = request.POST['pk']
     messages = simplejson.loads(request.POST['clients'])
     action = request.POST['action']
+    data = None
     print 'GOT CLIENT CHANGE REQUEST ', request.POST
+
     d = Discussion.objects.get(pk=pk)
+    try:
+        key = validKey(request.COOKIES['chatsession'])
+        d.admins.get(sessionid=key)
+    except:return HttpResponse(status=403)
     
     messages = d.message_set.filter(pk__in = messages)
     
-    sessions = []
     if action == 'ban':
         for m in messages:
             sessionid = m.sessionid
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
-            d.save()
-            data = {'TYPE':'ban', 'sessionid':sessionid}
-            REDIS.publish(pk, simplejson.dumps(data))
-    #do something with redis pub sub and sessionid attribute in node
+            data = {'TYPE':'ban', 'sessionid':sessionid,'announcement':'User has been removed'}
+    elif action == 'admin':
+        for m in messages:
+            sessionid = m.sessionid
+            a = Admin.objects.create(sessionid=sessionid)
+            d.admins.add(a)
+            try:
+                d.bannedsessions.get(sessionid=sessionid).delete()
+                data2 = {'TYPE':'private','sessionid':key,'title':'Warning:','message':'You just made a banned user an admin.  That user is no longer banned.' }
+                REDIS.publish(pk, simplejson.dumps(data2))
+                print 'Ban removed'
+            except:pass
+            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'Admin has been added'}
+            
+    if data is not None:
+        REDIS.publish(pk, simplejson.dumps(data))
+    d.save()
     
-    return HttpResponse()
+    done = simplejson.dumps({'status':'sent'})
+    return HttpResponse(done)
     
     
     

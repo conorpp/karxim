@@ -5,14 +5,14 @@ from karxim.functions import cleanHtml, getDistance
 from django.core import signing
 
 class NewDiscussionForm(forms.ModelForm):
-    admin = forms.CharField(max_length = 120, required = False)
     title = forms.CharField(max_length = 120, required = False)
+    password = forms.CharField(max_length = 120, required = False)
     lat = forms.FloatField(required = False)
     lng = forms.FloatField(required = False)
 
     class Meta:
         model = Discussion
-        fields = ('lat', 'lng', 'admin','title')
+        fields = ('lat', 'lng', 'title','password')
         
     def setFields(self, **kwargs):
         """
@@ -27,14 +27,13 @@ class NewDiscussionForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = False
-        self.admin = self.cleaned_data.get('admin', True)
-        print 'ADMIN',self.admin
         self.title = self.cleaned_data.get('title', 'hacker talk')
         self.lat = self.cleaned_data['lat']
         self.lng =self.cleaned_data['lng']
+        self.password = self.cleaned_data.get('password','').strip()
         if not self.lat or not self.lng:
             self.error = 'Try redragging the marker.  We failed to get the location.  We\'re  sorry.'
-        elif self.session is None:
+        elif not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
         else:
             try:
@@ -58,12 +57,13 @@ class NewDiscussionForm(forms.ModelForm):
             lng = self.lng,
             title = self.title,
             sessionid = self.session,
-            admin = self.admin
         )
-        if self.admin:
-            a = Admin.objects.create(sessionid = self.session)
-            self.discussion.admins.add(a)
-            self.discussion.save()
+        a=Admin.objects.create(sessionid = self.session)
+        self.discussion.admins.add(a)
+        if self.password:
+            self.discussion.private=True
+            self.discussion.password=self.password
+        self.discussion.save()
         return self.discussion
     
  
@@ -90,7 +90,7 @@ class NewMessageForm(forms.ModelForm):
 
         if not message: self.error = 'You need to send a message'
         
-        if self.session is None:
+        if not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
             
         self.name = self.cleaned_data.get('username', 'hacker')
@@ -98,9 +98,11 @@ class NewMessageForm(forms.ModelForm):
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
-        
+
         if self.session is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
+        elif self.discussion.bannedsessions.filter(sessionid=self.session).count():
+            self.error = 'You have been banned from this discussion'
         else:
             try:
                 c = Message.objects.filter(
@@ -135,19 +137,17 @@ class NewMessageForm(forms.ModelForm):
     
     def save(self ):
         """ creates message and increments new message count in convo """
-        self.discussion.totalMessages += 1
-        if self.replyTo:
-            self.parent.replies += 1
-            self.parent.newReplies += 1
-            self.parent.save()
-            self.message = Message.objects.create()
-        else:
-            self.message = Message.objects.create()
+        self.message = Message.objects.create()
         self.newPk = self.message.pk        #need pk before returning
         
         return self.message
 
     def commit(self):                       #for speed
+        if self.replyTo:
+            self.parent.replies += 1
+            self.parent.newReplies += 1
+            self.parent.save()
+        self.discussion.totalMessages += 1
         self.message.discussion = self.discussion
         self.message.username = self.name
         self.message.text = self.text

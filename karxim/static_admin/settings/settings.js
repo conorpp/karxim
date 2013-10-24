@@ -7,12 +7,14 @@
 var Settings = {
     
     /* Deployment Sensitive */
+    development:true,
     host:'http://localhost:8000',
-    simplehost:'http://localhost',
+    nakedHost:'localhost:8000',
+    simpleHost:'http://localhost',
     hostIP:'127.0.0.1',
     MessagePort:4000,
     RedisPort: 6379,
-    secretKey:'+fs7yhamybso)nl5g#cwpw-w$1n(@xm+cccq35rag-b#87%t+*',           //do not share with anyone.  Must be same one in settings.py
+    secretKey:'',           //do not share with anyone.  Must be same one in settings.py
     
     /* Universal */
     createMap:true
