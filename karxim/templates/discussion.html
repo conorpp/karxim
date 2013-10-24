@@ -11,8 +11,9 @@
     max-height:78%;
     margin-bottom:4em;
 }
-
 </style>
+<div id="popupSpace" class="hide abs fright background3 mar15"></div>
+<div id="topLoad" class="abs level3 top3" ></div>
 <div id="map" class="hide"></div>
 <div id="Discussion" class="background2 fright">
   <div id="topSpace"class="background3 color0" >
@@ -20,14 +21,18 @@
     <div id="dTitle" class="pad5 left2 fs18 abs">{{ title }}</div>
   </div>
   <div id="dFill" >
-    {% for m in messages %}
-        {{m.html|safe}}
-    {% endfor %}
   </div>
+    {% if private and not admin %}
+        <div class="color0 mar20">
+            <h2> Private </h2>
+            <input type="text" placeholder="Password" class="pw" >
+            <button class="color0 background1 joinPriv" id="joinPriv{{pk}}"> Join </button>
+        </div>
+    {% endif %}
   <div class="clear"></div>
   <div id="sendWrap" class="background3">
     <div class="errors color0 hide"></div>
-    <textarea placeholder=" Start a thread..." class=""></textarea>{% csrf_token %}
+    <textarea placeholder=" Start a thread..." class="" readonly></textarea>{% csrf_token %}
     <button id="send" class="abs "> Send </button>
     <div id="namePart" class="fright">
       <input type="text" placeholder=" Your name" id="name">
@@ -38,11 +43,12 @@
 </div>
 <script>
     Settings.createMap = false;
-    K.discussion = {{pk|safe}};
-    Message.subscribe(K.discussion);
     $(document).ready(function(){
         {% if admin %}
             K.admin();
+            K.discussion = {{pk|safe}};
+        {% elif not private %}
+            K.discussion = {{pk|safe}};
         {% endif %}
     });
 </script>

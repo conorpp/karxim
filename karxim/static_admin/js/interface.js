@@ -86,7 +86,7 @@ var K = {
         Map.newMark.addTo(Map);
         Map.newMark.openPopup();
     },
-    /* for updating with all discussions */
+    /* for updating with all discussion markers */
     update:function(data){
         for (i in data) {
             var marker = data[i];
@@ -96,6 +96,16 @@ var K = {
                 'id':marker['pk']
             })
         }
+    },
+    /* loads up a discussion for a given pk.  password optional. */
+    loadDisc: function(pk, password){
+        $('#topLoad').html(T.loadIcon);
+        var title = $('#discussion'+pk).find('h2').html();
+        $('#dTitle').html(title);
+        $('#dLink').val(Settings.nakedHost+'/d/'+pk);
+        $('#titleLink').attr('href', Settings.host+'/d/'+pk);
+        K.discussion = pk;
+        AJAXF.getMessages(pk, password);
     },
     /* installs admin UI for current discussion */
     admin:function(){
@@ -152,7 +162,6 @@ var K = {
     },
     
     ban:function(pk){
-        if(pk!=undefined)Message.leave(pk);
         $('#dFill').html('');
         $('#sendWrap').find('textarea').attr('readonly', true);
         K.popup('You have been removed from this discussion','',2001);

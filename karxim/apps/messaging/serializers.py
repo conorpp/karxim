@@ -63,7 +63,7 @@ class MessageSerializer():
             messages = [self.assignFields(self.messages)]                  #object
         
         json = kwargs.get('json', True)
-        data = {'messages':messages}
+        data = {'messages':messages,'admin':kwargs.get('admin','false')}
         if json:
             print 'RETURNING JSON'
             return simplejson.dumps(data)

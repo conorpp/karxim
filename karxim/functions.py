@@ -17,7 +17,7 @@ REDIS = redis.StrictRedis(host=WEB_DOMAIN, port=REDIS_PORT, db=0)
 
 def pubLog(error=''):
     data = {'TYPE':'log', 'log':error}
-    REDIS.publish('logs',simplejson.dumps(data))
+    REDIS.publish(0,simplejson.dumps(data))
     return True
 
 def add_csrf(request, **kwargs):

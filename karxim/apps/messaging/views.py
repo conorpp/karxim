@@ -37,15 +37,17 @@ def start(request):
             return HttpResponse(simplejson.dumps({'error':form.error}))
 
 def messages(request):
-    """ loads all messages for a discussion pk"""
+    """ loads all messages for a discussion pk.  rejects if invalid session or password."""
     pk = request.POST['pk']
     admin=False
+    error=None
     d = Discussion.objects.get(pk=pk)
     
     try:
         sessionid = validKey(request.COOKIES['chatsession'])
-        d.admins.get(sessionid = sessionid)
-        admin = True
+        if d.admins.filter(sessionid = sessionid).count():
+            print 'ADMIN!'
+            admin = True
     except:pass
     
     try:
@@ -55,19 +57,20 @@ def messages(request):
             return HttpResponse(simplejson.dumps({'error':error,'ban':True}))
     except:
         error = 'Please allow cookies or refresh the page'
+        
+    if d.private and not admin:
+        if d.password != request.POST['password']: error = 'Incorrect password'
+        
+    if error is not None:
         return HttpResponse(simplejson.dumps({'error':error}))
-    messages = d.message_set.all()
-    print 'admin status: ', admin
-    if admin:
-        data = MessageSerializer(messages).data(json=False)
-        data['admin'] = admin
-        data = simplejson.dumps(data)
-    else:
-        data = MessageSerializer(messages).data()
-
-    response = HttpResponse(data)
     
-    return response
+    messages = d.message_set.all()
+
+    data = MessageSerializer(messages).data(admin=admin)
+
+    REDIS.publish(0, simplejson.dumps({'TYPE':'subscribe','pk':d.pk, 'sessionid':sessionid}))
+    
+    return HttpResponse(data)
         
 
 def send(request):
@@ -114,21 +117,15 @@ def discussion(request,pk='0'):
     try:
         print 'got pk', pk
         pk = int(pk)
-        d = Discussion.objects.get(pk=pk)
-        messages = d.message_set.all()
-        data = data = MessageSerializer(messages).data(json = False)
-        data['title'] = d.title
-        data['pk'] = pk
-        adminid = request.get_signed_cookie('admin', None)
         admin = False
-
-        if adminid is not None:
-            if adminid == d.sessionid:
-                admin = True
-                
-        print 'result ' , admin
+        d = Discussion.objects.get(pk=pk)
+            
+        try:
+            sessionid = validKey(request.COOKIES['chatsession'])
+            if d.admins.filter(sessionid = sessionid).count():admin = True
+        except:pass
         
-        data['admin'] = admin
+        data = {'title':d.title, 'private':d.private, 'admin':admin, 'pk' : pk}
             
         return render(request,'discussion.html', data)
     except:
@@ -154,9 +151,13 @@ def client(request):
     if action == 'ban':
         for m in messages:
             sessionid = m.sessionid
+            if sessionid == key: #don't ban yourself
+                continue
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
-            data = {'TYPE':'ban', 'sessionid':sessionid,'announcement':'User has been removed'}
+            data = {'TYPE':'ban', 'sessionid':sessionid,'announcement':'User %s has been removed' % (m.username)}
+            REDIS.publish(pk, simplejson.dumps(data))
+            d.save()
     elif action == 'admin':
         for m in messages:
             sessionid = m.sessionid
@@ -164,15 +165,14 @@ def client(request):
             d.admins.add(a)
             try:
                 d.bannedsessions.get(sessionid=sessionid).delete()
-                data2 = {'TYPE':'private','sessionid':key,'title':'Warning:','message':'You just made a banned user an admin.  That user is no longer banned.' }
+                data2 = {'TYPE':'private','sessionid':key,'title':'Warning:','message':'You just made the banned user %s an admin.  That user is no longer banned.' % m.username}
                 REDIS.publish(pk, simplejson.dumps(data2))
                 print 'Ban removed'
             except:pass
-            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'Admin has been added'}
+            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'User %s has been made an Admin' % (m.username)}
+            REDIS.publish(pk, simplejson.dumps(data))
+            d.save()
             
-    if data is not None:
-        REDIS.publish(pk, simplejson.dumps(data))
-    d.save()
     
     done = simplejson.dumps({'status':'sent'})
     return HttpResponse(done)

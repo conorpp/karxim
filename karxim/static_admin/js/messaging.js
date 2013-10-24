@@ -7,10 +7,15 @@ var Message = {
         connect to chat app, make web socket
     */
     connect: function(){
+        //$('#topLoad').html(T.loadIcon);
         try {
             Message.socket = io.connect(Settings.simpleHost, {port: Settings.MessagePort});
             Message.socket.on('connect', function(){
-
+                //$('#topLoad').html('');
+                if (K.discussion) {
+                    K.loadDisc(K.discussion);
+                    $('textarea').attr('readonly',false);
+                }
             }); 
         } catch(e) {
             Message.socket = $();
@@ -51,11 +56,8 @@ var Message = {
         }
         return hours + ':' + minutes + ' ' + half;
     },
-    
-    subscribe:function(pk){
-        Message.socket.emit('joinChat', {pk:pk});
-    },
-    
+
+    /* leaves a discussion subscription */
     leave:function(pk){
         Message.socket.emit('leave', {pk:pk});
     }
@@ -87,9 +89,9 @@ Message.socket.on('ban', function(data) {
 
 Message.socket.on('admin', function(data) {
     K.admin();
-    K.popup('You have been made an admin for this discussion',data['r'],3200);
+    K.popup('You have been made an admin for this discussion',data['r'],4500);
 });
 
 Message.socket.on('private', function(data) {
-    K.popup(data['title'],data['message'],5200);
+    K.popup(data['title'],data['message'],8500);
 });   

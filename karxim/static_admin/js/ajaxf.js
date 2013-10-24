@@ -2,7 +2,7 @@
 
 var AJAXF = {
     makeDiscussion: function(latlng,title,password) {
-
+        $('#topLoad').html(T.loadIcon);
         $.ajax({
             type: 'POST',
             url: '/start/',
@@ -15,6 +15,7 @@ var AJAXF = {
             },
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
+                $('#topLoad').html('');
                 console.log('GOT DATA',data);
                 if (!data['error']) {                
                     data = data[0];
@@ -33,34 +34,35 @@ var AJAXF = {
             }
         });
     },
-    getMessages: function(pk){
-        
+    getMessages: function(pk, password){
+        $('#topLoad').html(T.loadIcon);
         $.ajax({
             type: 'POST',
             url: '/messages/',
             data: {
                 'pk': pk,
+                'password': password,
                 'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
                 },
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
-
+                $('#topLoad').html('');
                 var fill = $('#dFill');
                 fill.html('');
-                console.log('got messages',data);
                 $('#sendWrap').find('textarea').attr('readonly', false);
                 
                 if (data['error']) {
-                    K.showError(data['error'],20000);
+                    K.popup(data['error'],'',12000);
                     console.log(data['error']);
                     if (data['ban']) {
                         K.ban(pk);
                     }
                     return;
                 }
-                if (data['admin'] && Cookie.get('admin') ) K.admin();
+                if (data['admin']) K.admin();
                 
                 var messages = data['messages'];
+                $('#Discussion').show('fast');
                 
                 for (var i = 0; i < messages.length; i++) {
                     fill.append(messages[i]['html']);

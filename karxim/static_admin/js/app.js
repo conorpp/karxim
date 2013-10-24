@@ -33,18 +33,14 @@ $(document).ready(function(){
         AJAXF.makeDiscussion(latlng, title, pw);
     });
     $(document).on('click', '.join', function(){
-        
-        $('#dFill').html(T.loadIcon);
-        $('#Discussion').show('fast');
         var pk = this.id.replace('join','');
-        var title = $('#discussion'+pk).find('h2').html();
-        $('#dTitle').html(title);
-        $('#dLink').val(Settings.nakedHost+'/d/'+pk);
-        $('#titleLink').attr('href', Settings.host+'/d/'+pk);
-        K.discussion = pk;
-        AJAXF.getMessages(pk);
-        Message.subscribe(pk);
-        
+        K.loadDisc(pk);
+    });
+    $(document).on('click','.joinPriv',function(){
+        var pk = this.id.replace('joinPriv','');
+        var pw = $.trim($(this).siblings('input[type="text"].pw').val());
+        if (pw == '') return;
+        K.loadDisc(pk,pw);
     });
     $('#dX, #map').click(function(){
         $('#Discussion').hide('fast');

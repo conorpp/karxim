@@ -23,7 +23,7 @@ var querystring = require('querystring');
 
 var redis = require('socket.io/node_modules/redis');
 var sub = redis.createClient(Settings.RedisPort);
-sub.subscribe('logs'); 
+sub.subscribe(0); 	//general function channel
 var SOCKETS = {};
 
 var crypto = require('crypto');
@@ -64,31 +64,15 @@ io.configure(function(){
 io.sockets.on('connection', function(socket){
 
     try {
-	socket.sessionid = PARSE_SESSION(socket.handshake.cookie.chatsession);
+	var sessionid = PARSE_SESSION(socket.handshake.cookie.chatsession);
+	socket.sessionid = sessionid;
+	S.addSocket(sessionid, socket);
     } catch(e) {
 	console.log('session validation fail: ',e);
     }
     
     /* subscribe redis (sub) and socket to chatroom (pk) */
     socket.rooms = [];
-    socket.on('joinChat', function(data){
-        try{
-            var pk = data['pk'];
-        }catch(e){
-            console.log('join chat failed: ', e); return;
-        }
-	if (socket.rooms.indexOf(pk) != -1) return;  //don't bother if already subscribed
-	
-	for (i in this.rooms) {
-	    socket.leave(this.rooms[i])		//ensure only subscribed to one room
-	    this.rooms.splice(i,1);		
-	}
-	sub.subscribe(pk); 	//subscribe redis to room
-        socket.join(pk);	//subscribe new user to room
-	socket.rooms.push(pk);	//add room id to user's socket for us to track
-	
-	console.log('room ' + pk + ' saved');
-    });
     
     socket.on('leave', function(data){
 	console.log('user left room', data.pk);
@@ -96,6 +80,7 @@ io.sockets.on('connection', function(socket){
     });
     
     socket.on('disconnect', function(data){
+	S.removeSocket(this.sessionid);
         console.log('User disconnected.');
     });
 
@@ -109,26 +94,30 @@ function publish(channel, data){
     //console.log('data', data);
     switch(data['TYPE']){
 	
-	case 'update':
-	    GLOBAL_UPDATE(channel, data);
-	break;
-	
 	case 'message':
-	    SEND_MESSAGE(channel, data);
+	    S.message(channel, data);
+	break;
+    
+	case 'subscribe':
+	    S.subscribe(data)
 	break;
     
 	case 'ban':
-	    BAN(channel, data);
-	    GLOBAL_UPDATE(channel, data);
+	    S.ban(data);
+	    S.globalUpdate(channel, data);
 	break;
     
 	case 'admin':
-	    ADMIN(channel, data);
-	    GLOBAL_UPDATE(channel, data);
+	    S.admin(data);
+	    S.globalUpdate(channel, data);
 	break;
     
 	case 'private':
-	    PRIVATE(channel, data);
+	    S.priv(data);
+	break;
+    
+	case 'update':
+	    S.globalUpdate(channel, data);
 	break;
     
 	case 'log':
@@ -137,79 +126,81 @@ function publish(channel, data){
     
 	default:
 	    console.log('None of cases were met.  sending message anyway.');
-	    SEND_MESSAGE(channel, data);
+	    S.message(channel, data);
     }
 
         
 }
-/* actions for sending data to connected clients. */
 
-function SEND_MESSAGE(channel, data){
-    console.log('sending message through channel', channel);
-    io.sockets.in(channel).emit('getMessage', data);
-}
-
-//not implemented yet
-function GLOBAL_UPDATE(channel, data){
-    console.log('GLOBAL update through channel', channel);
-    io.sockets.in(channel).emit('update', data);
-}
-
-function BAN(channel, data) {
-    var sockets = io.sockets.clients(channel);
-    for (s in sockets) {
-	if (sockets[s].sessionid == data['sessionid']) {
+/* namespace for working with sockets */
+var S = {
+    sockets:{},
+    
+    addSocket: function(sessionid, socket){
+	S.sockets[''+sessionid] = socket;
+    },
+    
+    getSocket: function(sessionid){
+	return S.sockets[''+sessionid];
+    },
+    
+    removeSocket: function(sessionid){
+	delete S.sockets[''+sessionid];
+    },
+    
+    /* sends message from socket to all subscribed to channel (d pk) */
+    message: function (channel, data){
+	console.log('sending message through channel', channel);
+	io.sockets.in(channel).emit('getMessage', data);
+    },
+    
+    /* sends annoucement to everyone in a channel (discussion pk) */
+    globalUpdate:function(channel, data){
+	io.sockets.in(channel).emit('update', data);
+    },
+    
+    /* subscribe socket to recieve all messages sent through channel (discussion pk) */
+    subscribe: function(data) {
+	var pk = data['pk'];
+	var s = S.getSocket(data['sessionid'])
+	if (s==undefined)return;
+	if (s.rooms.indexOf(pk) != -1) return;  //don't bother if already subscribed
+	for (i in this.rooms) {
+	    s.leave(this.rooms[i])		//ensure only subscribed to one room
+	    this.rooms.splice(i,1);		
+	}
+	sub.subscribe(pk); 	//subscribe redis to room
+        s.join(pk);		//subscribe new user to room
+	s.rooms.push(pk);	//add room id to user's socket for us to track
+	
+	console.log('room ' + pk + ' saved');
+    },
+    
+    /* notifies socket of ban and removes him */
+    ban: function(data) {
+	var s = S.getSocket(data['sessionid']);
+	if (s) {
 	    console.log('BANNED!');
-	    sockets[s].leave(channel);
-	    sockets[s].emit('ban',data);
+	    s.emit('ban',data);
 	}
-    }
-}
-function ADMIN(channel, data) {
-    var sockets = io.sockets.clients(channel);
-    for (s in sockets) {
-	if (sockets[s].sessionid == data['sessionid']) {
+    },
+    
+    /* notifies socket of admin status and installs UI */
+    admin: function(data) {
+	var s = S.getSocket(data['sessionid']);
+	if (s) {
 	    console.log('ADMIN!');
-	    sockets[s].emit('admin',data);
+	    s.emit('admin',data);
 	}
-    }
-}
-function PRIVATE(channel, data) {
-    var sockets = io.sockets.clients(channel);
-    for (s in sockets) {
-	if (sockets[s].sessionid == data['sessionid']) {
+    },
+    
+    /* sends popup to one socket */
+    priv: function(data) {
+	var s = S.getSocket(data['sessionid']);
+	if (s) {
 	    console.log('PRIVATE!');
-	    sockets[s].emit('private',data);
+	    s.emit('private',data);
 	}
     }
-}
-/* NOT USED
-function CLIENT_UPDATE(channel, data){
-    for (var id in data['update']['users']) {
-	console.log('USER '+data['update']['users'][id]+' update "' +data['update']['message']+ '" through channel', channel);
-	try{
-	    var socket = SOCKETS['socket'+data['update']['users'][id]];
-	    socket.emit('update', data);
-	}catch(e){
-	    console.log('FAILED sending client update : ', e);
-	}
-    }
-}*/
-/*function SUBSCRIBE_USER(channel, data){
-    //subscribe the recipient if not already
-    try {
-	if (! 'socket'+data['recipientId'] in SOCKETS) return;
-	
-        var socket = SOCKETS['socket'+data['recipientId']];
-	
-	if (socket.rooms.indexOf(channel) != -1) return;	//recipient already subscribed
-	
-        socket.emit('createChat', data);
-	socket.rooms.push(channel);
-	socket.join(channel);
-	
-	console.log('recipient ' + data['recipientId'] + ' added to channel '+channel);
-    } catch(e) {
-        console.log('FAILED subscribing recipient: ', e);
-    }
-}*/
+    
+};
