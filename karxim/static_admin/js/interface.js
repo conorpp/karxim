@@ -20,6 +20,7 @@ var K = {
                 'ban' - ban them from discussion
     */
     discussion:0,
+    password:null,
     userCoords:null,
     username:'',
     replyTo:null,
@@ -105,6 +106,7 @@ var K = {
         $('#dLink').val(Settings.nakedHost+'/d/'+pk);
         $('#titleLink').attr('href', Settings.host+'/d/'+pk);
         K.discussion = pk;
+        if (password) K.password = password;
         AJAXF.getMessages(pk, password);
     },
     /* installs admin UI for current discussion */

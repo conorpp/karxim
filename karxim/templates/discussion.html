@@ -44,11 +44,11 @@
 <script>
     Settings.createMap = false;
     $(document).ready(function(){
+        K.discussion = {{pk|safe}};
         {% if admin %}
             K.admin();
-            K.discussion = {{pk|safe}};
+            {% if password %} K.password='{{password|safe}}'; {% endif %}
         {% elif not private %}
-            K.discussion = {{pk|safe}};
         {% endif %}
     });
 </script>

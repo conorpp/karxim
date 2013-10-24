@@ -3,6 +3,9 @@
 var AJAXF = {
     makeDiscussion: function(latlng,title,password) {
         $('#topLoad').html(T.loadIcon);
+        if (password==undefined) {
+            password = K.password;
+        }
         $.ajax({
             type: 'POST',
             url: '/start/',

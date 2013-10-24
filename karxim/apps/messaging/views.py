@@ -128,7 +128,7 @@ def discussion(request,pk='0'):
             if d.admins.filter(sessionid = sessionid).count():admin = True
         except:pass
         
-        data = {'title':d.title, 'private':d.private, 'admin':admin, 'pk' : pk}
+        data = {'title':d.title, 'private':d.private, 'admin':admin, 'pk' : pk,'password':d.password}
             
         return render(request,'discussion.html', data)
     except:

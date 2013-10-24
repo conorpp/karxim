@@ -1,19 +1,24 @@
 
 from django.template.loader import render_to_string
 
-from karxim.functions import REDIS
+from karxim.functions import REDIS, pubLog
 from karxim.settings import SOCKET_URL
+
 
 class ChatMiddleware():
     
     def process_view(self, request, view_func, *view_args, **view_kwargs):
         try:
-            print 'SESH ',request.session['chatsession']
+            pubLog('current SESH :'+str(request.session.session_key)+' = '+str(request.session['chatsession']))
+            if REDIS.get(request.session.session_key) != request.session['chatsession']:
+                REDIS.set(request.session.session_key, request.session['chatsession'])
         except Exception as e:
             chatsession = REDIS.get('users')
             REDIS.set('users',int(chatsession)+1)
             request.session['chatsession'] = chatsession
             request.session.save()
+            pubLog('NEW SESH : '+str(request.session.session_key)+' = '+ chatsession)
+            pubLog('the exception '+str(e))
             print str(request.session.session_key)+' = '+ chatsession
             REDIS.set(request.session.session_key, chatsession)
         return None
