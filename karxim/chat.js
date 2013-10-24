@@ -23,6 +23,7 @@ var querystring = require('querystring');
 
 var redis = require('socket.io/node_modules/redis');
 var sub = redis.createClient(Settings.RedisPort);
+var store = redis.createClient(Settings.RedisPort);
 sub.subscribe(0); 	//general function channel
 var SOCKETS = {};
 
@@ -33,19 +34,8 @@ else var secretKey = 'afd7yhamy4so)nd6ggcwp)-wrd~(@xm+rcc31jrag-k#87%t-#';
 hash.update(secretKey);
 const unsign_key = hash.digest();
 
-function PARSE_SESSION(session) {
-    var hmac = crypto.createHmac('sha1', unsign_key);
-    var values = session.split(':');
-    
-    hmac.update(values[0]);
-    
-    if (values[1] == (hmac.digest('hex'))) {
-	console.log('Valid user connected! id: ', values[0]);
-	return values[0];
-    }else{
-	console.log('Warning: Invalid user connected! ');
-	return false;
-    }
+function PARSE_SESSION(sessionid) {
+
 }
 
 //Configure socket.io to store cookies
@@ -63,15 +53,16 @@ io.configure(function(){
 
 io.sockets.on('connection', function(socket){
 
-    try {
-	var sessionid = PARSE_SESSION(socket.handshake.cookie.chatsession);
-	socket.sessionid = sessionid;
-	S.addSocket(sessionid, socket);
-    } catch(e) {
-	console.log('session validation fail: ',e);
-    }
+    var sessionid = socket.handshake.cookie.sessionid;
+    store.get(sessionid, function(err, reply){
+	if (reply) {
+	    socket.sessionid = reply;
+	    S.addSocket(reply, socket);
+	    console.log('user successfully validated: ', reply);
+	}
+	else console.log('session validation fail.  sessionid: ',reply);
+    });
     
-    /* subscribe redis (sub) and socket to chatroom (pk) */
     socket.rooms = [];
     
     socket.on('leave', function(data){
@@ -141,6 +132,7 @@ var S = {
     },
     
     getSocket: function(sessionid){
+	
 	return S.sockets[''+sessionid];
     },
     
@@ -161,6 +153,7 @@ var S = {
     
     /* subscribe socket to recieve all messages sent through channel (discussion pk) */
     subscribe: function(data) {
+	console.log('subscribing!', data);
 	var pk = data['pk'];
 	var s = S.getSocket(data['sessionid'])
 	if (s==undefined)return;

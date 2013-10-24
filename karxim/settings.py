@@ -89,6 +89,8 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 # Make sure it's exactly the same in settings.js !
 SECRET_KEY = '+fs7yhamybso)nl5g#cwpw-w$1n(@xm+cccq35rag-b#87%t+*'
+SESSION_COOKIE_AGE = 1728000 #20 days in secs
+
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

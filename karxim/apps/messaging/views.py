@@ -9,7 +9,7 @@ from django.utils import simplejson, timezone
 from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
-from karxim.functions import set_cookie,cookieValue, validKey, pubLog, REDIS
+from karxim.functions import pubLog, REDIS
 from karxim.settings import WEB_DOMAIN, REDIS_PORT
 
 if REDIS.get('users') is None:      #for session id's
@@ -27,7 +27,7 @@ def start(request):
     if request.method == 'POST':
         print 'POST ',request.POST
         form = NewDiscussionForm(request.POST)
-        form.setFields(chatsession=validKey(request.COOKIES.get('chatsession',None),None))
+        form.setFields(chatsession=request.session.get('chatsession',None))
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
@@ -44,14 +44,14 @@ def messages(request):
     d = Discussion.objects.get(pk=pk)
     
     try:
-        sessionid = validKey(request.COOKIES['chatsession'])
+        sessionid = request.session['chatsession']
         if d.admins.filter(sessionid = sessionid).count():
             print 'ADMIN!'
             admin = True
     except:pass
     
     try:
-        sessionid = validKey(request.COOKIES['chatsession'])
+        sessionid = request.session['chatsession']
         if d.bannedsessions.filter(sessionid=sessionid).count():
             error = 'You have been banned from this discussion'
             return HttpResponse(simplejson.dumps({'error':error,'ban':True}))
@@ -68,7 +68,7 @@ def messages(request):
 
     data = MessageSerializer(messages).data(admin=admin)
 
-    REDIS.publish(0, simplejson.dumps({'TYPE':'subscribe','pk':d.pk, 'sessionid':sessionid}))
+    REDIS.publish(0, simplejson.dumps({'TYPE':'subscribe','pk':pk, 'sessionid':sessionid}))
     
     return HttpResponse(data)
         
@@ -78,9 +78,9 @@ def send(request):
     try:
         pk = request.POST['pk']
         print 'request : ',request.POST
-        form = NewMessageForm(request.POST, request.COOKIES)
+        form = NewMessageForm(request.POST)
         form.setFields(replyTo = request.POST.get('replyTo',None),
-                       chatsession=validKey(request.COOKIES.get('chatsession',None),None))
+                       chatsession=request.session.get('chatsession',None))
 
         if not form.is_valid():
             data = simplejson.dumps({'error':form.error})
@@ -121,7 +121,7 @@ def discussion(request,pk='0'):
         d = Discussion.objects.get(pk=pk)
             
         try:
-            sessionid = validKey(request.COOKIES['chatsession'])
+            sessionid = request.session['chatsession']
             if d.admins.filter(sessionid = sessionid).count():admin = True
         except:pass
         
@@ -142,7 +142,7 @@ def client(request):
 
     d = Discussion.objects.get(pk=pk)
     try:
-        key = validKey(request.COOKIES['chatsession'])
+        key = request.session['chatsession']
         d.admins.get(sessionid=key)
     except:return HttpResponse(status=403)
     
