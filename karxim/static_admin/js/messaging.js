@@ -84,12 +84,12 @@ Message.socket.on('update', function(data) {
 });
 
 Message.socket.on('ban', function(data) {
-    K.ban();   
+    K.ban(data);   
 });
 
 Message.socket.on('admin', function(data) {
     K.admin();
-    K.popup('You have been made an admin for this discussion',data['r'],4500);
+    K.popup('Admin',data['message'],4500);
 });
 
 Message.socket.on('private', function(data) {

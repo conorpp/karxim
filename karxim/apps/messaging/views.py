@@ -31,6 +31,9 @@ def start(request):
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
+            if not request.user.is_authenticated():
+                msg = {'TYPE':'private','sessionid':request.session['chatsession'],'title':'Limited Admin:','message':'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.'}
+                REDIS.publish(0,simplejson.dumps(msg))
             return HttpResponse(data)
         else:
             print form.error
@@ -155,7 +158,7 @@ def client(request):
                 continue
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
-            data = {'TYPE':'ban', 'sessionid':sessionid,'announcement':'User %s has been removed' % (m.username)}
+            data = {'TYPE':'ban','pk':pk, 'sessionid':sessionid,'announcement':'User %s has been removed' % (m.username), 'message':'You have been removed from dicussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
     elif action == 'admin':
@@ -164,12 +167,12 @@ def client(request):
             a = Admin.objects.create(sessionid=sessionid)
             d.admins.add(a)
             try:
-                d.bannedsessions.get(sessionid=sessionid).delete()
+                d.removeBan(sessionid)
                 data2 = {'TYPE':'private','sessionid':key,'title':'Warning:','message':'You just made the banned user %s an admin.  That user is no longer banned.' % m.username}
                 REDIS.publish(pk, simplejson.dumps(data2))
                 print 'Ban removed'
-            except:pass
-            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'User %s has been made an Admin' % (m.username)}
+            except Exception as e: pubLog('removing ban error'+str(e))
+            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'User %s has been made an Admin' % (m.username), 'message':'You have been made an admin for discussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
             

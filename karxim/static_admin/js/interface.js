@@ -110,6 +110,7 @@ var K = {
     /* installs admin UI for current discussion */
     admin:function(){
         K.adminOff();
+        $('#sendWrap').find('textarea').attr('readonly', false);
         $('#topSpace').append(T.admin);
     },
     /* removes admin UI */
@@ -119,7 +120,6 @@ var K = {
     
     /* displays standard message for miliseconds */
     popup: function(title, message, millis){
-        if (message == undefined) message = title;
         var popup = $('#popupSpace');
         popup.html(T.popup);
         popup.find('.popupTitle').html(title);
@@ -161,10 +161,13 @@ var K = {
         }
     },
     
-    ban:function(pk){
-        $('#dFill').html('');
-        $('#sendWrap').find('textarea').attr('readonly', true);
-        K.popup('You have been removed from this discussion','',2001);
+    ban:function(data){
+        if(data['pk']==K.discussion){
+            $('#dFill').html('');
+            K.adminOff();
+            $('#sendWrap').find('textarea').attr('readonly', true);
+        }
+        K.popup('Removal',data['message'],3501);
     },
     
     announce:function(message){

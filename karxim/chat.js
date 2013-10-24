@@ -94,12 +94,12 @@ function publish(channel, data){
 	break;
     
 	case 'ban':
-	    S.ban(data);
+	    S.ban(channel,data);
 	    S.globalUpdate(channel, data);
 	break;
     
 	case 'admin':
-	    S.admin(data);
+	    S.admin(channel,data);
 	    S.globalUpdate(channel, data);
 	break;
     
@@ -170,18 +170,18 @@ var S = {
     },
     
     /* notifies socket of ban and removes him */
-    ban: function(data) {
+    ban: function(channel, data) {
 	var s = S.getSocket(data['sessionid']);
-	if (s) {
+	if (s.rooms.indexOf(channel) != -1) {
 	    console.log('BANNED!');
 	    s.emit('ban',data);
 	}
     },
     
     /* notifies socket of admin status and installs UI */
-    admin: function(data) {
+    admin: function(channel,data) {
 	var s = S.getSocket(data['sessionid']);
-	if (s) {
+	if (s.rooms.indexOf(channel) != -1) {
 	    console.log('ADMIN!');
 	    s.emit('admin',data);
 	}

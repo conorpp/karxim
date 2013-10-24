@@ -56,7 +56,11 @@ class Discussion(models.Model):
     def changeToOld(self, ):
         self.newComments = 0
         self.save()
-        
+    def removeBan(self,sessionid):
+        bans = self.bannedsessions.filter(sessionid=sessionid)
+        for ban in bans:
+            ban.delete()
+        return True
         
 
 class Message(models.Model):
