@@ -12,7 +12,7 @@
     margin-bottom:4em;
 }
 </style>
-<div id="popupSpace" class="hide abs fright background3 mar15"></div>
+<div id="popupSpace" class="hide abs fright background3 mar15 shadow"></div>
 <div id="topLoad" class="abs level3 top3" ></div>
 <div id="map" class="hide"></div>
 <div id="Discussion" class="background2 fright">
@@ -23,10 +23,12 @@
   <div id="dFill" >
   </div>
     {% if private and not admin %}
-        <div class="color0 mar20">
-            <h2> Private </h2>
-            <input type="text" placeholder="Password" class="pw" >
-            <button class="color0 background1 joinPriv" id="joinPriv{{pk}}"> Join </button>
+        <div id="hidePW">
+            <div class="color0 mar20">
+                <h2> Private </h2>
+                <input type="text" placeholder="Password" class="pw" >
+                <button class="color0 background1 joinPriv" id="joinPriv{{pk}}"> Join </button>
+            </div>
         </div>
     {% endif %}
   <div class="clear"></div>
@@ -44,11 +46,13 @@
 <script>
     Settings.createMap = false;
     $(document).ready(function(){
-        K.discussion = {{pk|safe}};
         {% if admin %}
             K.admin();
+            K.discussion = {{pk|safe}};
             {% if password %} K.password='{{password|safe}}'; {% endif %}
         {% elif not private %}
+            K.discussion = {{pk|safe}};
+            K.loadDisk(K.discussion);
         {% endif %}
     });
 </script>

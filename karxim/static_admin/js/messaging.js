@@ -4,7 +4,8 @@
 var Message = {
     
     /*
-        connect to chat app, make web socket
+        connect to chat app, make web socket.
+        connection issues UI.
     */
     connect: function(){
         try {
@@ -36,7 +37,7 @@ var Message = {
             });
         } catch(e) {
             this.socket = $();
-            //console.log("Failed connecting to socket.  Chat.js probably isn't running. ", e);
+            console.log("Failed connecting to socket.  Chat.js probably isn't running. ", e);
         }
 
     },

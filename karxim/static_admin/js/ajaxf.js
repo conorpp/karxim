@@ -63,7 +63,8 @@ var AJAXF = {
                 
                 var messages = data['messages'];
                 $('#Discussion').show('fast');
-                
+                $('#hidePW').hide('fast');
+
                 for (var i = 0; i < messages.length; i++) {
                     fill.append(messages[i]['html']);
                 }
