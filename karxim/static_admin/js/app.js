@@ -20,8 +20,12 @@ $(document).ready(function(){
         var title = $(this).siblings('input[type="text"]').val();
         var priv = $(this).siblings("div.checkbox").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
         var pw = $.trim($(this).siblings('input.pw').val());
-        if ($.trim(title)=='') return;
+        if ($.trim(title)=='') {
+            K.popup('Title','We require that every discussion at least have a name.',3600);
+            return
+        };
         if (priv=='True' && pw == '') {
+            K.popup('Password','Did you mean to enter a password?  If not, then please deselect private.',3600);
             $('input.pw').focus();
             return;
         }
@@ -39,11 +43,14 @@ $(document).ready(function(){
     $(document).on('click','.joinPriv',function(){
         var pk = this.id.replace('joinPriv','');
         var pw = $.trim($(this).siblings('input[type="text"].pw').val());
-        if (pw == '') return;
+        if (pw == '') {
+            K.popup('Private','You must enter the correct password for this discussion to get in.',3500);
+            return;
+        }
         K.loadDisc(pk,pw);
     });
     $('#dX, #map').click(function(){
-        $('#Discussion').hide('fast');
+        K.closeDisc();
     });
     
     $(document).on('click','.pX',function(){      //popup X
@@ -133,6 +140,7 @@ $(document).ready(function(){
         K.cAction=null;
         K.cAct();
     });
+    
 });
 
 

@@ -22,22 +22,20 @@ var cookie_reader = require('cookie');
 var querystring = require('querystring');
 
 var redis = require('socket.io/node_modules/redis');
-var sub = redis.createClient(Settings.RedisPort);
-var store = redis.createClient(Settings.RedisPort);
-sub.subscribe(0); 	//general function channel
+var store = redis.createClient(Settings.RedisPort);	//db checking redis.
+var sub = redis.createClient(Settings.RedisPort);	//chatroom specific redis.
+var gen = redis.createClient(Settings.RedisPort);	//general functions redis. Channel 0 only.
+gen.subscribe(0); 	
 var SOCKETS = {};
 
+/*	NOT USED
 var crypto = require('crypto');
 var hash = crypto.createHash('sha1');		//for unsigning chat sessionid's
 if (Settings.development) var secretKey = '+fs7yhamybso)nl5g#cwpw-w$1n(@xm+cccq35rag-b#87%t+*';
 else var secretKey = 'afd7yhamy4so)nd6ggcwp)-wrd~(@xm+rcc31jrag-k#87%t-#';
 hash.update(secretKey);
 const unsign_key = hash.digest();
-
-function PARSE_SESSION(sessionid) {
-
-}
-
+*/
 //Configure socket.io to store cookies
 io.configure(function(){
     io.set('authorization', function(data, accept){
@@ -68,6 +66,8 @@ io.sockets.on('connection', function(socket){
     socket.on('leave', function(data){
 	console.log('user left room', data.pk);
         this.leave(data.pk);
+	var i = this.rooms.indexOf(data.pk);
+	this.rooms.splice(i,1);
     });
     
     socket.on('disconnect', function(data){
@@ -79,18 +79,16 @@ io.sockets.on('connection', function(socket){
 }); // end io.sockets.on
 
 //This is what sends data back to client
-sub.on('message', publish);
-function publish(channel, data){ 
+sub.on('message', Discussion);			//channel is pk of discussion
+gen.on('message', General);			//channel 0 only.
+
+function Discussion(channel, data){ 
     data = JSON.parse(data);
     //console.log('data', data);
     switch(data['TYPE']){
 	
 	case 'message':
 	    S.message(channel, data);
-	break;
-    
-	case 'subscribe':
-	    S.subscribe(data)
 	break;
     
 	case 'ban':
@@ -103,12 +101,28 @@ function publish(channel, data){
 	    S.globalUpdate(channel, data);
 	break;
     
-	case 'private':
-	    S.priv(data);
-	break;
-    
 	case 'update':
 	    S.globalUpdate(channel, data);
+	break;
+    
+	default:
+	    console.log('None of cases were met for discussion publish.  sending message anyway.');
+	    S.message(channel, data);
+    }
+        
+}
+function General(channel, data){
+    if (channel != 0 ) return; 
+    data = JSON.parse(data);
+    //console.log('data', data);
+    switch(data['TYPE']){
+	
+	case 'subscribe':
+	    S.subscribe(data)
+	break;
+	
+	case 'private':
+	    S.priv(data);
 	break;
     
 	case 'log':
@@ -116,11 +130,8 @@ function publish(channel, data){
 	break;
     
 	default:
-	    console.log('None of cases were met.  sending message anyway.');
-	    S.message(channel, data);
+	    console.log('None of cases were met for general publish. Nothing was done.');
     }
-
-        
 }
 
 /* namespace for working with sockets */
@@ -158,10 +169,6 @@ var S = {
 	var s = S.getSocket(data['sessionid'])
 	if (s==undefined)return;
 	if (s.rooms.indexOf(pk) != -1) return;  //don't bother if already subscribed
-	for (i in this.rooms) {
-	    s.leave(this.rooms[i])		//ensure only subscribed to one room
-	    this.rooms.splice(i,1);		
-	}
 	sub.subscribe(pk); 	//subscribe redis to room
         s.join(pk);		//subscribe new user to room
 	s.rooms.push(pk);	//add room id to user's socket for us to track
@@ -172,19 +179,19 @@ var S = {
     /* notifies socket of ban and removes him */
     ban: function(channel, data) {
 	var s = S.getSocket(data['sessionid']);
-	if (s.rooms.indexOf(channel) != -1) {
+	//if (s.rooms.indexOf(channel) != -1) {
 	    console.log('BANNED!');
 	    s.emit('ban',data);
-	}
+	//}
     },
     
     /* notifies socket of admin status and installs UI */
     admin: function(channel,data) {
 	var s = S.getSocket(data['sessionid']);
-	if (s.rooms.indexOf(channel) != -1) {
+	//if (s.rooms.indexOf(channel) != -1) {
 	    console.log('ADMIN!');
 	    s.emit('admin',data);
-	}
+	//}
     },
     
     /* sends popup to one socket */

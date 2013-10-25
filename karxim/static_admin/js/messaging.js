@@ -7,19 +7,36 @@ var Message = {
         connect to chat app, make web socket
     */
     connect: function(){
-        //$('#topLoad').html(T.loadIcon);
         try {
-            Message.socket = io.connect(Settings.simpleHost, {port: Settings.MessagePort});
-            Message.socket.on('connect', function(){
-                //$('#topLoad').html('');
+            this.socket = io.connect(Settings.simpleHost, {port: Settings.MessagePort});
+            this.socket.on('connecting', function () {K.loading()});
+            this.socket.on('connect', function(){
+                K.loaded();
                 if (K.discussion) {
-                    K.loadDisc(K.discussion);
+                    K.loadDisc(K.discussion,K.password);
                     $('textarea').attr('readonly',false);
                 }
-            }); 
+            });
+            this.socket.on('reconnecting', function(){
+                K.popup('Lost connection','Attempting to reconnect . . .');
+                K.loading();
+            });
+            this.socket.on('reconnect_failed', function () {
+                K.loaded();
+                K.popup('Disconnected','We failed to reconnect you.  Sorry about that.',4000);
+            });
+            this.socket.on('reconnect', function () {
+                K.loaded();
+                K.popup('Connected','We successfully reconnected you.',4100);
+                $('textarea').attr('disabled',false);
+            });
+            this.socket.on('disconnect', function () {
+                $('textarea').attr('disabled',true);
+                K.popup('','disconnected');
+            });
         } catch(e) {
-            Message.socket = $();
-            console.log("Failed connecting to socket.  Chat.js probably isn't running. ", e);
+            this.socket = $();
+            //console.log("Failed connecting to socket.  Chat.js probably isn't running. ", e);
         }
 
     },
@@ -59,7 +76,7 @@ var Message = {
 
     /* leaves a discussion subscription */
     leave:function(pk){
-        Message.socket.emit('leave', {pk:pk});
+        this.socket.emit('leave', {pk:pk});
     }
     
 };
@@ -68,6 +85,7 @@ var Message = {
 Message.connect();
 
 Message.socket.on('getMessage', function(data) {
+    if (data['discussion'] != K.discussion) return;
     var pk = data['pk'];
     var message = data['html'];
     if (data['replyTo']) {
@@ -84,7 +102,8 @@ Message.socket.on('update', function(data) {
 });
 
 Message.socket.on('ban', function(data) {
-    K.ban(data);   
+    if(data['pk'] == K.discussion) K.ban(data);
+    K.popup('Removal',data['message'],3501);
 });
 
 Message.socket.on('admin', function(data) {

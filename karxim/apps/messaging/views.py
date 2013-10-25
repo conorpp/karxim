@@ -92,7 +92,8 @@ def send(request):
         form.save()
         data = {'TYPE':'message',
                 'replyTo':form.replyTo,
-                'pk':form.newPk
+                'pk':form.newPk,
+                'discussion':form.discussion.pk
                 }
         data['html'] = render_to_string('parts/message.html',{
             'm':{
@@ -155,6 +156,7 @@ def client(request):
         for m in messages:
             sessionid = m.sessionid
             if sessionid == key: #don't ban yourself
+                REDIS.publish(0,simplejson.dumps({'TYPE':'private','sessionid':sessionid, 'title':'That\'s funny', 'message':'You just tried to ban yourself.'}))
                 continue
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
@@ -169,7 +171,7 @@ def client(request):
             try:
                 d.removeBan(sessionid)
                 data2 = {'TYPE':'private','sessionid':key,'title':'Warning:','message':'You just made the banned user %s an admin.  That user is no longer banned.' % m.username}
-                REDIS.publish(pk, simplejson.dumps(data2))
+                REDIS.publish(0, simplejson.dumps(data2))
                 print 'Ban removed'
             except Exception as e: pubLog('removing ban error'+str(e))
             data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'User %s has been made an Admin' % (m.username), 'message':'You have been made an admin for discussion %s' % d.title}

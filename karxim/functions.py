@@ -6,33 +6,20 @@ import datetime , re, hmac, redis, hashlib
 from lxml.html.clean import Cleaner, autolink_html, clean_html
 from BeautifulSoup import BeautifulSoup 
 
-from django.utils.hashcompat import sha_constructor, sha_hmac
 from django.core.context_processors import csrf 
 from django.utils import timezone , simplejson
 from django.contrib import auth
-from karxim.settings import SECRET_KEY, REDIS_PORT, WEB_DOMAIN
+from karxim.settings import SECRET_KEY, REDIS_PORT
 
 KEY = hashlib.sha1(SECRET_KEY).digest()
-REDIS = redis.StrictRedis(host=WEB_DOMAIN, port=REDIS_PORT, db=0)
+REDIS = redis.StrictRedis(host='127.0.0.1', port=REDIS_PORT, db=0)
 
-def pubLog(error=''):
-    data = {'TYPE':'log', 'log':error}
-    REDIS.publish(0,simplejson.dumps(data))
-    return True
-
-def add_csrf(request, **kwargs):
-    """ adds csrf token to a dict{} and returns it """
-    c=dict(**kwargs)
-    c.update(csrf(request))
-    return c
-
-    
-def hours(created):
-    """ returns difference in hours between now and a datetime object """
-    time = timezone.now() - created
-    hours = int(time.seconds/3600) + int(time.days*24)
-    return hours;
-
+def pubLog(msg=''):
+    """ sends log statement to node so you can monitor live
+        logs from node in terminal.
+    """
+    REDIS.publish(0,simplejson.dumps({'TYPE':'log', 'log':msg}))
+    return msg
         
 def getDistance(lat1, lng1, lat2, lng2):
     """Calculate the great circle distance between two points 
@@ -53,6 +40,7 @@ def getDistance(lat1, lng1, lat2, lng2):
     if miles < 0.01:
         miles = 0.01
     return miles
+
 
 def set_cookie(response, key, value, days_expire = 20, signed=True):
     """ sets a signed cookie. returns value and sign unless specified not signed"""
@@ -81,9 +69,9 @@ def detectMobile(request):
             return True 
         return False
 
+
 URL_REGEX = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
 cleaner = Cleaner(style=False, links=True, page_structure=False)
-
 def cleanHtml(text, add_target=True):
     """ cleans up html and auto links with target=_blank for forms """
     rawtext = cleaner.clean_html(autolink_html(text, [URL_REGEX], avoid_hosts=[]))
@@ -97,24 +85,6 @@ def cleanHtml(text, add_target=True):
         return ''.join(map(str,text.contents))
     return rawtext
 
-KEY = sha_constructor(SECRET_KEY).digest()
-
-def vXXXalidKey(signedValue, option='notavalue'):
-    """
-        Check if signed cookie is legit.
-        returns value if it is, else returns False
-    """
-    try:
-        values = signedValue.split(':')
-        valid_sign = hmac.new(KEY, msg=values[0], digestmod=sha_hmac).hexdigest()
-        if valid_sign == values[1]:
-            return values[0]
-        else:
-            return False
-    except:
-        if option!='notavalue':
-            return option
-        else: raise KeyError('The key is not valid')
 
 
 

@@ -18,6 +18,8 @@ var K = {
         @cAction - string indication what to do with selected clients.
                 'admin' - make them an admin for discussion
                 'ban' - ban them from discussion
+        @timeout - for clearing timeout on popup animation.
+
     */
     discussion:0,
     password:null,
@@ -25,6 +27,10 @@ var K = {
     username:'',
     replyTo:null,
     cAction:'',
+    timeout:null,
+    
+    loading:function(){try{$('#topLoad').html(T.loadIcon);}catch(e){}},
+    loaded:function(){try{$('#topLoad').html('');}catch(e){}},
     
     create: function(commit){
         if (commit == undefined) commit = true;
@@ -66,6 +72,7 @@ var K = {
         newMark.on('mouseover', function(){
             this.openPopup();
         });
+        
         if (options.start) {
             Map.newMark = newMark;
             newMark.on('dragend', function(){
@@ -100,19 +107,27 @@ var K = {
     },
     /* loads up a discussion for a given pk.  password optional. */
     loadDisc: function(pk, password){
-        $('#topLoad').html(T.loadIcon);
+        this.discussion = pk;
+        if (password) this.password = password;
+        AJAXF.getMessages(pk);
         var title = $('#discussion'+pk).find('h2').html();
+        $('#topLoad').html(T.loadIcon);
         $('#dTitle').html(title);
         $('#dLink').val(Settings.nakedHost+'/d/'+pk);
         $('#titleLink').attr('href', Settings.host+'/d/'+pk);
-        K.discussion = pk;
-        if (password) K.password = password;
-        AJAXF.getMessages(pk, password);
+        $('#sendWrap').find('textarea').attr('disabled', false);
+    },
+    /* IMPORTANT.  this must be called everytime a discussion is closed whilst still on same page. */
+    closeDisc: function(){               
+        $('#Discussion').hide('fast');
+        if(this.discussion)Message.leave(this.discussion);
+        this.discussion = null;
+        this.password = null;
+        
     },
     /* installs admin UI for current discussion */
     admin:function(){
-        K.adminOff();
-        $('#sendWrap').find('textarea').attr('readonly', false);
+        this.adminOff();
         $('#topSpace').append(T.admin);
     },
     /* removes admin UI */
@@ -122,12 +137,13 @@ var K = {
     
     /* displays standard message for miliseconds */
     popup: function(title, message, millis){
+        clearTimeout(K.timeout);
         var popup = $('#popupSpace');
         popup.html(T.popup);
         popup.find('.popupTitle').html(title);
         popup.find('.popupMessage').html(message);
         popup.show('fast');
-        if(millis!=undefined)setTimeout(function(){popup.hide('fast')},millis);
+        if(millis!=undefined) this.timeout = setTimeout(function(){popup.hide('fast')},millis);
     },
 
     /* displays error in error locations for miliseconds */
@@ -167,9 +183,8 @@ var K = {
         if(data['pk']==K.discussion){
             $('#dFill').html('');
             K.adminOff();
-            $('#sendWrap').find('textarea').attr('readonly', true);
+            $('#sendWrap').find('textarea').attr('disabled', true);
         }
-        K.popup('Removal',data['message'],3501);
     },
     
     announce:function(message){
