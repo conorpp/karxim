@@ -84,8 +84,8 @@ var AJAXF = {
             'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             }       
         try{
-            data.lat = K.userCoords.lat;
-            data.lng = K.userCoords.lng;
+            data.lat = K.userCoords.latitude;
+            data.lng = K.userCoords.longitude;
         }catch(e){}
         $.ajax({
             type: 'POST',

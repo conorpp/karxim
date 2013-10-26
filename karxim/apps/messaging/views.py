@@ -63,6 +63,13 @@ def messages(request):
         
     if d.private and not admin:
         if d.password != request.POST['password']: error = 'Incorrect password'
+        else:
+            print 'valids  ', request.session.get('validDiscs')
+            try:                                                #remember you got the password right.
+                if not request.session['validDiscs'].index(d.id):
+                    request.session['validDiscs'].append(d.id)
+            except:
+                request.session['validDiscs'] = [d.pk]
         
     if error is not None:
         return HttpResponse(simplejson.dumps({'error':error}))
@@ -121,18 +128,26 @@ def discussion(request,pk='0'):
     try:
         print 'got pk', pk
         pk = int(pk)
-        admin = False
         d = Discussion.objects.get(pk=pk)
             
-        try:
-            sessionid = request.session['chatsession']
-            if d.admins.filter(sessionid = sessionid).count():admin = True
-        except:pass
+        sessionid = request.session['chatsession']
+        if d.admins.filter(sessionid = sessionid).count():
+            admin = True
+            private = None
+        else:
+            admin = False
+            if d.private:
+                try:
+                    request.session.get('validDiscs',[]).index(d.id)
+                    private = False
+                except: private = True
+            else: private=False
         
-        data = {'title':d.title, 'private':d.private, 'admin':admin, 'pk' : pk,'password':d.password}
+        data = {'title':d.title, 'private':private, 'admin':admin, 'pk' : pk,'password':d.password}
             
         return render(request,'discussion.html', data)
-    except:
+    except Exception as e:
+        print('error loading discussion',e)
         return HttpResponse(status=404)
     
 def client(request):

@@ -34,6 +34,7 @@ var K = {
     
     create: function(commit){
         if (commit == undefined) commit = true;
+        if (!commit) return;
         Map = L.map('map',{
             center: [51.505, -0.09],
             zoom: 13
@@ -192,6 +193,19 @@ var K = {
         console.log('announce', a);
         a.find('.announce').html(message);
         $('#dFill').prepend(a.html());
+    },
+    
+    locate:function(){
+        if (navigator.geolocation) {
+            var pos = function(e){
+                K.userCoords = e.coords;
+                console.log('got coords', K.userCoords);
+            }
+            var error = function(e){
+                console.log('there was an err getting location ',e);
+            }
+            navigator.geolocation.getCurrentPosition(pos, error);
+        }
     }
 
 };

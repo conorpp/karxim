@@ -46,13 +46,13 @@
 <script>
     Settings.createMap = false;
     $(document).ready(function(){
-        {% if admin %}
+        {% if password %} K.password='{{password|safe}}'; {% endif %}
+        {#      If K.discussion is set, than conversation will load automatically when the socket connects.           #}
+        {% if admin %}  
             K.admin();
             K.discussion = {{pk|safe}};
-            {% if password %} K.password='{{password|safe}}'; {% endif %}
         {% elif not private %}
             K.discussion = {{pk|safe}};
-            K.loadDisk(K.discussion);
         {% endif %}
     });
 </script>

@@ -3,6 +3,7 @@
 $(document).ready(function(){
     
     K.create(Settings.createMap);
+    K.locate();
     K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
@@ -73,9 +74,6 @@ $(document).ready(function(){
     });
     $('#dLink').click(function(){
         $(this).select();
-    });
-    Map.on('locationfound', function(e){
-        K.userCoords = e.latlng;
     });
     
     $('#nameSave').click(function(){
