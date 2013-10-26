@@ -31,6 +31,7 @@ class Discussion(models.Model):
     lat = models.CharField(max_length=50)
     lng = models.CharField(max_length=50)
     distance = models.FloatField(default = 0)
+    location = models.BooleanField(default = True)
     
     #the following not implemented
     newMessages = models.IntegerField(default=0)
@@ -39,15 +40,42 @@ class Discussion(models.Model):
     index = models.CharField(max_length=18, db_index=True, default='0')
     password = models.CharField(max_length=100, default='')
     private = models.BooleanField(default = False)
-    date = models.DateTimeField(auto_now_add=True)
+    startDate = models.DateTimeField(null=True, blank=True, default=None)
+    endDate = models.DateTimeField(null=True, blank=True, default=None)
     upVote = models.IntegerField(default=0, db_index=True)
     downVote = models.IntegerField(default=0)
     
     def __unicode__(self):
         return self.title
+    
+    def schedule(self, ):
+        print 'start ', self.startDate
+        print 'end ', self.endDate
+        print 'now ', timezone.localtime(timezone.now())
+        if self.startDate is None:
+            print '1'
+            return ''
+        if self.startDate > timezone.now() + timezone.timedelta(hours=12):
+            print '2'
+            return self.startDate
+        
 
-    def votes(self):
-        return (self.upVote - self.downVote)
+        elif self.startDate > timezone.now():
+            return 'Begins %s '% naturaltime(self.startDate)
+        
+        elif self.endDate:
+            print '3'
+            if self.endDate > timezone.now():
+                print '4'
+                return 'In progress.  Ending in %s' % naturaltime(self.endDate)
+            
+            else:
+                print '5'
+                return 'This discussion ended %s' % naturaltime(self.endDate)
+        
+        else:
+            print '6'
+            return 'Started %s' % naturaltime(self.startDate)
     
     def age(self):
         return naturaltime(self.created)

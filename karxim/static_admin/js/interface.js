@@ -19,6 +19,8 @@ var K = {
                 'admin' - make them an admin for discussion
                 'ban' - ban them from discussion
         @timeout - for clearing timeout on popup animation.
+        @prepend - indicate to prepend to feed or otherwise append.
+        @newDisc - reference to popup form for new disc so it can be removed after valid submission.
 
     */
     discussion:0,
@@ -28,6 +30,8 @@ var K = {
     replyTo:null,
     cAction:'',
     timeout:null,
+    prepend:false,
+    newDisc:null,
     
     loading:function(){try{$('#topLoad').html(T.loadIcon);}catch(e){}},
     loaded:function(){try{$('#topLoad').html('');}catch(e){}},
@@ -39,12 +43,10 @@ var K = {
         Map = L.map('map',{
             center: [51.505, -0.09],
             zoom: 13,
-            zoomControl:false,
-            worldCopyJump:true
+            zoomControl:false
         });
         if(commit)L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);
         Map.addControl(new L.Control.Zoom({ position: 'topright' }));
-        //Map.addControl(control);
         Map.locate({setView: true, timeout:1500});
     },
     
@@ -53,10 +55,10 @@ var K = {
         if (options.draggable ==undefined) options.draggable = false;
         if (options.start ==undefined) options.start = false;
         if (options.start) {
-            var iconURL = '/static/images/newMarker.png';
+            var iconURL = '/static/images/new_Marker.png';
         }else var iconURL = '/static/images/marker.png';
         if (options.latlng ==undefined) options.latlng = Map.getCenter();
-        if (options.content ==undefined) options.content = T.newMark;
+        if (options.content ==undefined) options.content = '';
         if(Map.newMark)Map.removeLayer(Map.newMark);
         var markOptions = {    
             draggable:options.draggable,
@@ -79,18 +81,9 @@ var K = {
 
         if (options.start) {
             Map.newMark = newMark;
-            newMark.on('dragstart dragend', function(){
+            newMark.on('dragend', function(){
                 this.openPopup();
                 Map.panTo(this.getLatLng())
-            });
-            newMark.on('click', function(){
-                var popup2 = new L.Popup({closeOnClick:!options.start, closeButton:!options.start}).setContent($('.leaflet-popup-content').html());
-                console.log($('.leaflet-popup-content').html());
-                newMark.bindPopup(popup2);
-            });
-            newMark.on('popupclose', function(){
-                console.log(this);
-                K.removeNewMark();
             });
         }else{
             newMark.on('mouseover', function(){
@@ -105,14 +98,16 @@ var K = {
         }
     },
     addFeed:function(feed){
-        $('#feed').append(feed);
+        if(this.prepend) $('#feed').prepend(feed);
+        else $('#feed').append(feed);
     },
     /* animates to discussion in feed */
     selectFeed:function(id){
+        $('.dFeed').removeClass('background3');
+        if (!id) return;
         $('html, body').animate({
             scrollTop: $('#dFeed'+id).offset().top
         }, 200);
-        $('.dFeed').removeClass('background3');
         $('#dFeed'+id).addClass('background3');
     },
     removeNewMark: function(){
@@ -127,7 +122,11 @@ var K = {
         Map.newMark.openPopup();
     },
     /* for updating with all discussion markers */
-    update:function(data){
+    update:function(data, options){
+        if (options == undefined) options = {};
+        if (options.prepend) {
+            this.prepend = true;
+        }else this.prepend = false;
         for (i in data) {
             var d = data[i];
             K.createMarker({
@@ -147,12 +146,14 @@ var K = {
         $('#topLoad').html(T.loadIcon);
         $('#dTitle').html(title);
         $('#dLink').val(Settings.nakedHost+'/d/'+pk);
+        if($('#schedule'+pk).length)$('#info').html($('#schedule'+pk).html());
         $('#titleLink').attr('href', Settings.host+'/d/'+pk);
         $('#sendWrap').find('textarea').attr('disabled', false);
     },
     /* IMPORTANT.  this must be called everytime a discussion is closed whilst still on same page. */
     closeDisc: function(){               
         $('#Discussion').hide('fast');
+        this.selectFeed();
         if(this.discussion)Message.leave(this.discussion);
         this.discussion = null;
         this.password = null;
@@ -169,15 +170,26 @@ var K = {
     },
     
     /* displays standard message for miliseconds */
-    popup: function(title, message, millis){
+    popup: function(title, message, options){
+        if (options == undefined) options = {};
         clearTimeout(K.timeout);
         console.log('popupo...');
         var popup = $('#popupSpace');
+        if(options.clone){
+            var popup = popup.clone();
+            $('#'+options.id).remove();
+            popup.attr('id',options.id);
+            popup.toggleClass('level5 level4');
+            $('body').append(popup);
+        }
         popup.html(T.popup);
         popup.find('.popupTitle').html(title);
         popup.find('.popupMessage').html(message);
+        if (options.right) popup.css('right', options.right);
+        else if (options.left) popup.css('left', options.left).css('right','initial');
+        else popup.css('left', 'inherit').css('right','inherit');
         popup.show('fast');
-        if(millis!=undefined) this.timeout = setTimeout(function(){popup.hide('fast')},millis);
+        if(options.millis!=undefined) this.timeout = setTimeout(function(){popup.hide('fast')},options.millis);
     },
 
     /* displays error in error locations for miliseconds */
@@ -242,7 +254,7 @@ var K = {
     },
     
     addTime:function(){
-        K.popup('Start and End time','wee');
+        //K.popup('Start and End time','wee');
     }
 
 };
@@ -260,7 +272,10 @@ $(document).ready(function(){
         
         selectClient: $('#selectClient').html(),
         
-        announce: $('#annouceTemplate')
+        announce: $('#annouceTemplate'),
+        
+        newDisc: $('#newDisc')
+        
     }
 });
 

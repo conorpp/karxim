@@ -9,15 +9,14 @@ $(document).ready(function(){
         $('input#name').attr('placeholder', K.username);
         $('#yourName').html('Your name is '+K.username);
     }
-
+    
     $('#start').on('click', function(){
-        console.log('new mark ',T.newMark);
+        $('.pDay').datepicker('destroy');
         K.createMarker({'draggable':true,'start':true, 'content':T.newMark});
+        K.popup('New Discussion',T.newDisc,{left:'1%',clone:true,id:'newDiscPopup'});
+        $('.pDay').datepicker({ altFormat: "mm-dd", minDate: new Date().toLocaleString()});
     });
-    $(document).on('click', '.addTime',function(){
-        K.addTime();
-        console.log('adding time....');
-    });
+    
     $(document).on('click','.private > input',function(){
         $('input.pw').toggle();
     });
@@ -26,23 +25,27 @@ $(document).ready(function(){
     });
     $(document).on('click', '.dSubmit', function(){
         var title = $(this).siblings('input[type="text"]').val();
-        var priv = $(this).siblings("div.checkbox").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
+        var priv = $(this).siblings("div.private").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
+        var loc = $(this).siblings("div.location").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
         var pw = $.trim($(this).siblings('input.pw').val());
         if ($.trim(title)=='') {
-            K.popup('Title','We require that every discussion at least have a name.',3600);
+            K.popup('Title','We require that every discussion at least have a name. That\'s it.',{millis:2300});
             return
         };
         if (priv=='True' && pw == '') {
-            K.popup('Password','Did you mean to enter a password?  If not, then please deselect private.',3600);
+            K.popup('Password','Did you mean to enter a password?  If not, then please deselect private.',{millis:2300});
             $('input.pw').focus();
             return;
         }
+        $('.pDay').datepicker('destroy');
+        K.newDisc = $(this).parents('.popupSpace');
+
         var latlng = Map.newMark.getLatLng();
-        var popup = new L.Popup().setContent(T.loadIcon);
-        Map.newMark.closePopup();
-        Map.newMark.bindPopup(popup);
-        Map.newMark.openPopup();
-        AJAXF.makeDiscussion(latlng, title, pw);
+        var date = K.newDisc.find('input.pDay').val();
+        var time = K.newDisc.find('input.pTime').val();
+        
+        K.newDisc.html(T.loadIcon);
+        AJAXF.makeDiscussion(latlng, title, pw, loc, date, time);
     });
     $(document).on('click', '.join', function(){
         var pk = this.id.replace('join','');
@@ -52,7 +55,7 @@ $(document).ready(function(){
         var pk = this.id.replace('joinPriv','');
         var pw = $.trim($(this).siblings('input[type="text"].pw').val());
         if (pw == '') {
-            K.popup('Private','You must enter the correct password for this discussion to get in.',3500);
+            K.popup('Private','You must enter the correct password for this discussion to get in.',{millis:3500});
             return;
         }
         K.loadDisc(pk,pw);
@@ -62,7 +65,11 @@ $(document).ready(function(){
     });
     
     $(document).on('click','.pX',function(){      //popup X
-        $('#popupSpace').hide();
+        var parent = $(this).parents('.popupSpace');
+        parent.hide();
+        if (parent.attr('id') == 'newDiscPopup') {
+            K.removeNewMark();
+        }
     });
     $('#newThread').click(function(){
         $('#startThread').show('fast');
@@ -75,7 +82,7 @@ $(document).ready(function(){
         var name = K.username;
         if ($.trim(name)=='') {
             $('#name').focus();
-            K.popup('Please enter a name','There is a field in the bottom right corner.',4500);
+            K.popup('Please enter a name','There is a field in the bottom right corner.',{millis:4500});
             return;
         }
         AJAXF.send(message,name,K.discussion);

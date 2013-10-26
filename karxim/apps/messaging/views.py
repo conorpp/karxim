@@ -18,12 +18,13 @@ if REDIS.get('users') is None:      #for session id's
 
 def home(request):
     context = {
-        'markers': DiscussionSerializer(Discussion.objects.order_by('-lastActive')[:250]).data(),
+        'markers': DiscussionSerializer(Discussion.objects.filter(location = True).order_by('-lastActive')[:250]).data(),
     }
     return render(request, 'index.html', context)
 
 def start(request):
     """ creates discussion and returns it """
+    print 'POST ',request.POST
     if request.method == 'POST':
         print 'POST ',request.POST
         form = NewDiscussionForm(request.POST)
@@ -147,7 +148,7 @@ def discussion(request,pk='0'):
                 except: private = True
             else: private=False
         
-        data = {'title':d.title, 'private':private, 'admin':admin, 'pk' : pk,'password':d.password}
+        data = {'title':d.title, 'private':private, 'admin':admin, 'pk' : pk,'password':d.password, 'schedule':d.schedule()}
             
         return render(request,'discussion.html', data)
     except Exception as e:

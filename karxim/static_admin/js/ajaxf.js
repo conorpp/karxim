@@ -1,9 +1,10 @@
 
 
 var AJAXF = {
-    makeDiscussion: function(latlng,title,password) {
+    makeDiscussion: function(latlng,title,password,loc, date, time) {
         K.loading();
-
+        console.log('date ', date);
+        console.log('time ', time);
         $.ajax({
             type: 'POST',
             url: '/start/',
@@ -12,25 +13,27 @@ var AJAXF = {
                 'lng': latlng.lng,
                 'title': title,
                 'password': password,
+                'location': loc,
+                'date': date,
+                'time': time,
                 'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             },
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
                 K.loaded();
                 console.log('GOT DATA',data);
-                if (!data['error']) {                
-                    data = data[0];
+                if (!data['error']) {
+                    K.newDisc.remove();
+                    T.newDisc.find('input').val('');
                     K.removeNewMark();
-                    K.createMarker({
-                        'content':data['html'],
-                        'latlng':[data['lat'],data['lng']]
-                    });
+                    K.update(data,{'prepend':true});
                     if (data['admin']=='True') {
                         K.popup('Limited Admin Abilities',
                                 'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
                     }
                 }else{
-                    K.setNewMarkError(data['error']);
+                    $('#start').trigger('click');
+                    K.popup(data['error']);
                 }
             }
         });
@@ -52,7 +55,7 @@ var AJAXF = {
                 fill.html('');
                 
                 if (data['error']) {
-                    K.popup(data['error'],data['message'],5000);
+                    K.popup(data['error'],data['message'],{millis:5000});
                     console.log(data['error']);
                     if (data['ban']) {
                         K.ban(pk);

@@ -1,7 +1,10 @@
+from dateutil import parser
+import pytz
 from django import forms
 from django.utils import timezone
 from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin
 from karxim.functions import cleanHtml, getDistance
+from karxim.settings import TIME_ZONE
 from django.core import signing
 
 class NewDiscussionForm(forms.ModelForm):
@@ -9,10 +12,13 @@ class NewDiscussionForm(forms.ModelForm):
     password = forms.CharField(max_length = 120, required = False)
     lat = forms.FloatField(required = False)
     lng = forms.FloatField(required = False)
+    location = forms.BooleanField(required = False)
+    date = forms.CharField(required = False)
+    time = forms.CharField(required = False)
 
     class Meta:
         model = Discussion
-        fields = ('lat', 'lng', 'title','password')
+        fields = ('lat', 'lng', 'title','password','location','date', 'time')
         
     def setFields(self, **kwargs):
         """
@@ -44,6 +50,14 @@ class NewDiscussionForm(forms.ModelForm):
                 if c>2:
                     self.error = 'Please take your time and try again in one minute'
             except:pass
+        tz = pytz.timezone(TIME_ZONE)
+        try:
+            date = self.cleaned_data['date']+' '+self.cleaned_data['time'] 
+            self.date = (parser.parse(date))
+            print 'FORMS TIME ',(parser.parse(date))
+        except Exception as e:
+            print 'EXCEPTION getting start date ',e
+            self.date = None
         
         if self.error:
             raise forms.ValidationError(self.error)
@@ -57,6 +71,8 @@ class NewDiscussionForm(forms.ModelForm):
             lng = self.lng,
             title = self.title,
             sessionid = self.session,
+            location = self.cleaned_data.get('location',True),
+            startDate = self.date
         )
         a=Admin.objects.create(sessionid = self.session)
         self.discussion.admins.add(a)

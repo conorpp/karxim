@@ -30,16 +30,23 @@ a{
 .clicker{cursor: pointer;}
 .hover:hover{color:#78b677;}
 
+.center{
+    text-align: center;
+}
+
 input[type="text"], textarea{
     padding:10px;
     border:none;
     border-radius: 3px;
 }
 input[type="checkbox"]{
-    width: 22px;
-    height: 22px;
-    margin-top:6px;
+    width: 15px;
+    height: 15px;
+    margin-top:4px;
 }
+.colorB{color:black;}                        /* BLACK */
+.backgroundB{background:black}        
+
 .color0{color:white}                        /* WHITE */
 .background0{background:white}              
 
@@ -91,6 +98,7 @@ input[type="checkbox"]{
 .level2{z-index:2}
 .level3{z-index:3}
 .level4{z-index:4}
+.level5{z-index:5}
 
 .shadow{
     box-shadow: -2px 2px 20px 1px #000;
@@ -131,10 +139,9 @@ button{
 .join{
 }
 
-#popupSpace{
+.popupSpace{
     top:0px;
-    max-width: 24em;
-    z-index: 5;
+    max-width: 28em;
 }
 
 .popup{
@@ -143,5 +150,10 @@ button{
 
 .leaflet-top .leaflet-control{
     margin-right: 215px;
+}
+
+.selectTime input[type="text"]{
+    height: .8em;
+    max-width: 5em;
 }
 

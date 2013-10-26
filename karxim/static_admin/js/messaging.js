@@ -24,11 +24,11 @@ var Message = {
             });
             this.socket.on('reconnect_failed', function () {
                 K.loaded();
-                K.popup('Disconnected','We failed to reconnect you.  Sorry about that.',4000);
+                K.popup('Disconnected','We failed to reconnect you.  Sorry about that.',{millis:4000});
             });
             this.socket.on('reconnect', function () {
                 K.loaded();
-                K.popup('Connected','We successfully reconnected you.',4100);
+                K.popup('Connected','We successfully reconnected you.',{millis:4100});
                 $('textarea').attr('disabled',false);
             });
             this.socket.on('disconnect', function () {
@@ -105,14 +105,14 @@ Message.socket.on('update', function(data) {
 
 Message.socket.on('ban', function(data) {
     if(data['pk'] == K.discussion) K.ban(data);
-    K.popup('Removal',data['message'],3501);
+    K.popup('Removal',data['message'],{millis:3500});
 });
 
 Message.socket.on('admin', function(data) {
     K.admin();
-    K.popup('Admin',data['message'],4500);
+    K.popup('Admin',data['message'],{millis:4500});
 });
 
 Message.socket.on('private', function(data) {
-    K.popup(data['title'],data['message'],8500);
+    K.popup(data['title'],data['message'],{millis:8500});
 });   
