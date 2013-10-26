@@ -9,13 +9,20 @@ $(document).ready(function(){
         $('input#name').attr('placeholder', K.username);
         $('#yourName').html('Your name is '+K.username);
     }
-    
+
     $('#start').on('click', function(){
         console.log('new mark ',T.newMark);
         K.createMarker({'draggable':true,'start':true, 'content':T.newMark});
     });
+    $(document).on('click', '.addTime',function(){
+        K.addTime();
+        console.log('adding time....');
+    });
     $(document).on('click','.private > input',function(){
-        $('input.pw').toggle(100);
+        $('input.pw').toggle();
+    });
+    $(document).on('click', '.dCancel', function(){
+        K.removeNewMark();
     });
     $(document).on('click', '.dSubmit', function(){
         var title = $(this).siblings('input[type="text"]').val();

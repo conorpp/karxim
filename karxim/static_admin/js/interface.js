@@ -35,6 +35,7 @@ var K = {
     create: function(commit){
         if (commit == undefined) commit = true;
         if (!commit) return;
+
         Map = L.map('map',{
             center: [51.505, -0.09],
             zoom: 13,
@@ -60,13 +61,14 @@ var K = {
         var markOptions = {    
             draggable:options.draggable,
             riseOnHover:true,
+            
             icon: L.icon({
                 iconUrl:iconURL,
                 iconAnchor:[15, 35],
                 popupAnchor:[0, -35],
             })
         };
-        var popup = new L.Popup().setContent(options.content);
+        var popup = new L.Popup({closeOnClick:!options.start, closeButton:!options.start}).setContent(options.content);
         var newMark = L.marker(options.latlng, markOptions);
         if (options.id) {
             newMark.id = options.id;
@@ -74,28 +76,48 @@ var K = {
         newMark.bindPopup(popup);
         newMark.addTo(Map);
         newMark.openPopup();
-        newMark.on('mouseover', function(){
-            this.openPopup();
-        });
-        newMark.on('click', function(){
-            this.togglePopup();
-        });
+
         if (options.start) {
             Map.newMark = newMark;
-            newMark.on('dragend', function(){
+            newMark.on('dragstart dragend', function(){
                 this.openPopup();
                 Map.panTo(this.getLatLng())
             });
+            newMark.on('click', function(){
+                var popup2 = new L.Popup({closeOnClick:!options.start, closeButton:!options.start}).setContent($('.leaflet-popup-content').html());
+                console.log($('.leaflet-popup-content').html());
+                newMark.bindPopup(popup2);
+            });
             newMark.on('popupclose', function(){
+                console.log(this);
                 K.removeNewMark();
+            });
+        }else{
+            newMark.on('mouseover', function(){
+                if (Map.newMark) return;
+                this.openPopup();
+                K.selectFeed(this.id);
+            });
+            newMark.on('click', function(){
+                if (Map.newMark) return;
+                K.selectFeed(this.id);
             });
         }
     },
     addFeed:function(feed){
         $('#feed').append(feed);
     },
+    /* animates to discussion in feed */
+    selectFeed:function(id){
+        $('html, body').animate({
+            scrollTop: $('#dFeed'+id).offset().top
+        }, 200);
+        $('.dFeed').removeClass('background3');
+        $('#dFeed'+id).addClass('background3');
+    },
     removeNewMark: function(){
         Map.removeLayer(Map.newMark);
+        delete Map.newMark;
     },
     /* display error on new marker */
     setNewMarkError:function(error){
@@ -149,6 +171,7 @@ var K = {
     /* displays standard message for miliseconds */
     popup: function(title, message, millis){
         clearTimeout(K.timeout);
+        console.log('popupo...');
         var popup = $('#popupSpace');
         popup.html(T.popup);
         popup.find('.popupTitle').html(title);
@@ -216,6 +239,10 @@ var K = {
             }
             navigator.geolocation.getCurrentPosition(pos, error);
         }
+    },
+    
+    addTime:function(){
+        K.popup('Start and End time','wee');
     }
 
 };
