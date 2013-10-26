@@ -67,7 +67,6 @@ class MessageSerializer():
         json = kwargs.get('json', True)
         data = {'messages':messages,'admin':kwargs.get('admin','false')}
         if json:
-            print 'RETURNING JSON'
             return simplejson.dumps(data)
         else: return data
     

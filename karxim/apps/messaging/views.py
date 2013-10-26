@@ -64,11 +64,15 @@ def messages(request):
     if d.private and not admin:
         if d.password != request.POST['password']: error = 'Incorrect password'
         else:
-            print 'valids  ', request.session.get('validDiscs')
             try:                                                #remember you got the password right.
-                if not request.session['validDiscs'].index(d.id):
-                    request.session['validDiscs'].append(d.id)
-            except:
+                arr = request.session['validDiscs']
+                try: arr.index(d.id)
+                except:
+                    arr.append(d.id)
+                    print 'arr final ', arr
+                    request.session['validDiscs'] = arr
+                    request.session.save()
+            except Exception as e:
                 request.session['validDiscs'] = [d.pk]
         
     if error is not None:
