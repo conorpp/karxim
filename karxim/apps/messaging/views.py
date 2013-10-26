@@ -10,7 +10,7 @@ from karxim.apps.messaging.models import Discussion, BannedSession, Admin
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
 from karxim.functions import pubLog, REDIS
-from karxim.settings import WEB_DOMAIN, REDIS_PORT
+from karxim.settings import REDIS_PORT
 
 if REDIS.get('users') is None:      #for session id's
     REDIS.set('users','0')

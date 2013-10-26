@@ -41,7 +41,6 @@ class ChatMiddleware():
 
 #global template variables
 def base(request):
-    
     return {
         'SOCKET_URL': SOCKET_URL,
         'TEMPLATES':render_to_string('includeTemplates.html')

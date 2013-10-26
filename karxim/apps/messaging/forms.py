@@ -93,7 +93,7 @@ class NewMessageForm(forms.ModelForm):
         if not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
             
-        self.name = self.cleaned_data.get('username', 'hacker')
+        self.name = self.cleaned_data.get('username', 'hacker')[:40]
         if self.name.strip() == '': self.name = 'hacker'
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)

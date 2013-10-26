@@ -22,7 +22,8 @@ DATABASES = {
     }
 }
 REDIS_PORT = 6379
-WEB_DOMAIN = 'localhost'
+WEB_URL = 'localhost:8000'
+
 #web socket url
 SOCKET_URL = 'http://localhost:4000/socket.io/socket.io.js'
 
@@ -34,7 +35,7 @@ ALLOWED_HOSTS = []
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'America/New_York'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html

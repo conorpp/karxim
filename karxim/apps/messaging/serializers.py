@@ -1,6 +1,8 @@
 from django.utils import simplejson
 from django.template.loader import render_to_string
 
+from karxim.settings import WEB_URL
+
 class DiscussionSerializer():
     def __init__(self, discs):
         try:
@@ -21,8 +23,8 @@ class DiscussionSerializer():
         for i,dis in enumerate(self.discs):
             fields = self.assignFields(dis)
             if kind == 'html':
-                html =  render_to_string('parts/marker.html', {'d':dis})
-                fields['html'] = html
+                fields['popup'] =  render_to_string('parts/popup.html', {'d':dis})
+                fields['feed'] = render_to_string('parts/feed.html', {'d':dis,'WEB_URL':WEB_URL})
             data.append(fields)
             
         return simplejson.dumps(data)

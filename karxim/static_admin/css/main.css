@@ -8,8 +8,11 @@ body{
 a{
     color:#78b677;
 }
+
 .abs{position: absolute;}
+.fixed{position: fixed;}
 .rel{position: relative;}
+
 .fleft{
     float:left;
     left:0px;
@@ -23,9 +26,10 @@ a{
 }
 .clear{clear: both;}
 .clearL{clear: left;}
-.clicker{
-    cursor: pointer;
-}
+
+.clicker{cursor: pointer;}
+.hover:hover{color:#78b677;}
+
 input[type="text"], textarea{
     padding:10px;
     border:none;
@@ -56,6 +60,7 @@ input[type="checkbox"]{
 
 .bold{font-weight: bold;}
 .fs6{font-size: .6em;}
+.fs7{font-size: .72em;}
 .fs8{font-size: .8em;}
 .fs12{font-size: 1.2em;}
 .fs14{font-size: 1.4em;}
@@ -78,6 +83,7 @@ input[type="checkbox"]{
 .right2{margin-right: 2em}
 .right4{margin-right: 4em}
 .right6{margin-right: 6em}
+.top0{top:0px;}
 .top2{top:2em;}
 .top3{top:3em;}
 .top4{top:4em;}
@@ -99,8 +105,7 @@ button{
 }
 
 #map{
-    position: absolute;
-    top:0; bottom:0;
+    top:0px; bottom:0px; left:0px;
     width:100%;
 }
 
@@ -124,7 +129,6 @@ button{
     color:white;
 }
 .join{
-    font-size: 1.65em;
 }
 
 #popupSpace{
@@ -135,5 +139,9 @@ button{
 
 .popup{
     border-radius: 4px;
+}
+
+.leaflet-top .leaflet-control{
+    margin-right: 215px;
 }
 

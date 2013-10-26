@@ -1,6 +1,5 @@
 #Discussion{
     z-index: 2;
-    position: absolute;
     top: 0px;
     width:92%;
     height: 80%;
@@ -26,6 +25,7 @@
     position: absolute;
     width: 100%;
     top:92%;
+    min-height: 120px;
 }
 #sendWrap input,#sendWrap textarea,#sendWrap button{
     display: inline-block;

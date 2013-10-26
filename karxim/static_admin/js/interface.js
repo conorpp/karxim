@@ -37,9 +37,13 @@ var K = {
         if (!commit) return;
         Map = L.map('map',{
             center: [51.505, -0.09],
-            zoom: 13
+            zoom: 13,
+            zoomControl:false,
+            worldCopyJump:true
         });
-        if(commit)L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);				
+        if(commit)L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);
+        Map.addControl(new L.Control.Zoom({ position: 'topright' }));
+        //Map.addControl(control);
         Map.locate({setView: true, timeout:1500});
     },
     
@@ -73,17 +77,22 @@ var K = {
         newMark.on('mouseover', function(){
             this.openPopup();
         });
-        
+        newMark.on('click', function(){
+            this.togglePopup();
+        });
         if (options.start) {
             Map.newMark = newMark;
             newMark.on('dragend', function(){
                 this.openPopup();
                 Map.panTo(this.getLatLng())
             });
-            popup.on('popupclose', function(){
+            newMark.on('popupclose', function(){
                 K.removeNewMark();
             });
         }
+    },
+    addFeed:function(feed){
+        $('#feed').append(feed);
     },
     removeNewMark: function(){
         Map.removeLayer(Map.newMark);
@@ -98,12 +107,13 @@ var K = {
     /* for updating with all discussion markers */
     update:function(data){
         for (i in data) {
-            var marker = data[i];
+            var d = data[i];
             K.createMarker({
-                'content':marker['html'],
-                'latlng':[marker['lat'],marker['lng']],
-                'id':marker['pk']
+                'content':d['popup'],
+                'latlng':[d['lat'],d['lng']],
+                'id':d['pk']
             })
+            K.addFeed(d['feed']);
         }
     },
     /* loads up a discussion for a given pk.  password optional. */

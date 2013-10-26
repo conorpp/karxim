@@ -50,34 +50,39 @@ $(document).ready(function(){
         }
         K.loadDisc(pk,pw);
     });
-    $('#dX, #map').click(function(){
+    $('#dX, #map,#feedWrap').click(function(){
         K.closeDisc();
     });
     
     $(document).on('click','.pX',function(){      //popup X
         $('#popupSpace').hide();
     });
-    
+    $('#newThread').click(function(){
+        $('#startThread').show('fast');
+        $('#startThread').find('textarea').focus();
+        $(this).hide();
+    });
     $('#send').click(function(){
         var message = $.trim($(this).siblings('textarea').val());
         if (message == '') return;
         var name = K.username;
         if ($.trim(name)=='') {
-            $('.errors').html('Please enter a name');
-            $('.errors').show('fast');
-            setTimeout(function(){$('.errors').hide('slow');},1200);
+            $('#name').focus();
+            K.popup('Please enter a name','There is a field in the bottom right corner.',4500);
             return;
         }
         AJAXF.send(message,name,K.discussion);
         $(this).siblings('textarea').val('');
         setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
+        $('#startThread').hide('fast');
+        $('#newThread').show();
     });
     $('#dLink').click(function(){
         $(this).select();
     });
     
     $('#nameSave').click(function(){
-        var name = $.trim($('input#name').val());
+        var name = $.trim($('input#name').val()).slice(0,39);
         if (name == '') return;
         K.username = name;
         $('input#name').val('');
@@ -90,7 +95,9 @@ $(document).ready(function(){
         var replyTo = this.id.replace('replyTo', '');
         K.replyTo = replyTo;
         $(this).hide('fast');
-        $('#reply'+replyTo).show('fast');
+        var reply = $('#reply'+replyTo);
+        reply.show('fast');
+        reply.find('textarea').focus();
     });
     $(document).on('click','.replyX', function(){
         var pk = $(this).parent('.replyContainer')[0].id.replace('reply','');

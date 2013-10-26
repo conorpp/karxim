@@ -58,7 +58,7 @@ var Message = {
 
 
     /* returns time like '9:06 pm' */
-    getTime: function(){
+    time: function(){
         var date = new Date();
         var hours = date.getHours();
         var half = 'am';
@@ -92,9 +92,10 @@ Message.socket.on('getMessage', function(data) {
     if (data['replyTo']) {
         $('#dFill').find('#message'+data['replyTo']).after(message);
     }else $('#dFill').prepend(message);
-        
-    $('#message'+pk).hide();
-    $('#message'+pk).show(100);        
+    var select = $('#message'+pk);
+    select.find('.time').html(Message.time());
+    select.hide();
+    select.show(100);        
 });
 
 Message.socket.on('update', function(data) {
