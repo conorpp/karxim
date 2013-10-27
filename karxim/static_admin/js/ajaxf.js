@@ -70,19 +70,32 @@ var AJAXF = {
         
     },
     
-    send: function(message, name, pk, replyTo){
+    send: function(message, name, pk){
         data  = {
             'discussion': pk,
             'pk': pk,
             'username': name,
             'text': message,
-            'replyTo': replyTo,
+            'replyTo': K.replyTo,
             'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             }       
         try{
             data.lat = K.userCoords.latitude;
             data.lng = K.userCoords.longitude;
         }catch(e){}
+        if (K.file && K.file == K.replyTo) {
+            var fileForm = $('#messageFile');
+            console.log('UPLOADING FILE!');
+            for (var key in data){
+                console.log('adding key '+key+' for val ', data);
+                var input = fileForm.find('input[name="'+key+'"]');
+                if (input) input.val(data[key]);
+                console.log('value of form input is ', input.val());
+            }
+            console.log('SUBMITING FILE FORM!');
+            fileForm.submit();
+            return;
+        }
         $.ajax({
             type: 'POST',
             url: '/send/',

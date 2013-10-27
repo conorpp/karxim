@@ -38,6 +38,23 @@ input[type="text"], textarea{
     border:none;
     border-radius: 3px;
 }
+textarea{
+    min-height: 40px;
+}
+img.thumbnail{
+    max-height: 50px;
+    max-width: 50px;
+}
+img.full{
+    max-height: 420px;
+    max-width: 420px;
+}
+img.hover:hover{
+    border:1px solid black;
+}
+button:hover{
+    color:#2b2b2b;
+}
 input[type="checkbox"]{
     width: 15px;
     height: 15px;

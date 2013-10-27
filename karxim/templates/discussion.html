@@ -19,7 +19,7 @@
 <div id="Discussion" class="background2 fright fixed">
   <div id="topSpace"class="background3 color0" >
     <div id="dX"class="fleft abs clicker background3 hide" >X</div>
-    <a href="/" target="_blank"><div id="logo" class="abs fleft color1">K</div></a>
+    <a href="/" ><div id="logo" class="abs fleft color1">K</div></a>
     <div id="dTitle" class="pad5 left4 fs12 abs">{{ title }}</div>
     <p id="info" class="abs top2 fs8 left6 bold">{{ schedule }}</p>
   </div>
@@ -39,7 +39,8 @@
     <div class="errors color0 hide"></div>
     <div class="hide rel level2" id="startThread">
       <textarea placeholder=" Start a new thread..." class=""></textarea>{% csrf_token %}
-      <button id="send" class="abs"> Send </button>
+      <button id="send0" class="abs send"> Send </button>
+      <button id="attach0" class="attach abs background4 top3"> Attach files or images </button>
     </div>
     <button id="newThread" >New topic</button>
     <div id="namePart" class="fright abs top0">

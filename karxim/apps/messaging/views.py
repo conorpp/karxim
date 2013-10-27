@@ -111,29 +111,31 @@ def send(request):
         if not form.is_valid():
             data = simplejson.dumps({'error':form.error})
             return HttpResponse(data)
-        
+        form.setFiles(request.FILES.getlist('files'))
         form.save()
         data = {'TYPE':'message',
                 'replyTo':form.replyTo,
                 'pk':form.newPk,
                 'discussion':form.discussion.pk
                 }
+        m ={
+            'pk':form.newPk,
+            'username':form.name,
+            'text':form.text,
+            'stem':form.stem,
+            'distance': form.distance,
+            'age':timezone.now().strftime('%I:%M %p'),
+            'file_set':form.allFiles
+            }
+                
         data['html'] = render_to_string('parts/message.html',{
-            'm':{
-                'pk':form.newPk,
-                'username':form.name,
-                'text':form.text,
-                'stem':form.stem,
-                'distance': form.distance,
-                'age':timezone.now().strftime('%I:%M %p')
-            },
+            'm':m,
             })
-
         REDIS.publish(pk, simplejson.dumps(data))
         form.commit()   #moved as many db hits until after publish so clients get message quicker.
         return HttpResponse(status=200)
     
-    except Exception as e:
+    except ArithmeticError:
         pubLog('VIEW \'send\' ERROR : '+str(e) )
         print str(e)
         return HttpResponse(status=500)    

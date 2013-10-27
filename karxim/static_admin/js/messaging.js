@@ -2,7 +2,6 @@
 
 
 var Message = {
-    
     /*
         connect to chat app, make web socket.
         connection issues UI.
@@ -86,7 +85,8 @@ var Message = {
 Message.connect();
 
 Message.socket.on('getMessage', function(data) {
-    if (data['discussion'] != K.discussion) return;
+    console.log('discuss', Message.discussion);
+    if (data['discussion'] != Message.discussion) return;
     var pk = data['pk'];
     var message = data['html'];
     if (data['replyTo']) {

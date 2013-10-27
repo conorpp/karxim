@@ -3,7 +3,7 @@ from dateutil import parser
 
 from django import forms
 from django.utils import timezone
-from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin
+from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin, File
 from karxim.functions import cleanHtml, getDistance
 from karxim.settings import TIME_ZONE
 from django.core import signing
@@ -127,7 +127,8 @@ class NewMessageForm(forms.ModelForm):
         fields = ('discussion','text','username','lat', 'lng')
     
     def setFields(self,**kwargs):
-        self.replyTo = kwargs.get('replyTo', None)
+        try:self.replyTo = int(kwargs.get('replyTo', 0))
+        except: self.replyTo = 0
         self.session = kwargs.get('chatsession',None)
 
     def clean(self):
@@ -184,12 +185,30 @@ class NewMessageForm(forms.ModelForm):
     def getError(self, ):
         return self.error
     
+    def setFiles(self, files):
+        print 'GOT FILES', files
+        if files:
+            self.pics = []
+            self.files = []
+            print 'files evaluated as True'
+            for f in files:
+                print 'enter for loop'
+                try:
+                    ext = f.name.rsplit('.',1)[1]
+                    if ext.lower() in ['jpg', 'jpeg', 'gif', 'png']:
+                        self.pics.append(f)
+                    else: self.files.append(f)
+                except: self.files.append(f)
+            self.allFiles = self.pics+self.files
+        else:
+            print 'files evaluated as False'
+            self.pics, self.files,self.allFiles =None,None,None
     
     def save(self ):
         """ creates message and increments new message count in convo """
         self.message = Message.objects.create()
         self.newPk = self.message.pk        #need pk before returning
-        
+                
         return self.message
 
     def commit(self):                       #for speed
@@ -208,6 +227,13 @@ class NewMessageForm(forms.ModelForm):
         self.message.updateActive()
         self.message.save()
         self.discussion.save()
+        if self.pics:
+            print 'saving pics'
+            for pic in self.pics:
+                File.objects.create(image = pic, message = self.message)
+        if self.files:
+            for f in self.files:
+                File.objects.create(item = f, message = self.message)
         return self.message
 
 #client spam bot tester (currently protected from this)

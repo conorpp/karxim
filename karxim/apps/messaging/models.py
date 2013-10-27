@@ -1,3 +1,5 @@
+import os
+
 from django.db import models, connection
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -98,8 +100,8 @@ class Message(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     
     #following not implemented
-    image = models.ImageField(upload_to='/images',blank=True, null=True)
-    item = models.FileField(upload_to='/images/files',blank=True, null=True)
+    image = models.ImageField(upload_to='images',blank=True, null=True)
+    item = models.FileField(upload_to='images/files',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
     def __unicode__(self, ):
         return self.text
@@ -124,7 +126,15 @@ class Message(models.Model):
         except Exception as e:
             print 'all done traversing parents'
 
-    
-    
+class File(models.Model):
+    message = models.ForeignKey(Message,blank=True, null=True)
+    discussion = models.ForeignKey(Discussion,blank=True, null=True)
+    image = models.ImageField(upload_to='images',blank=True, null=True)
+    item = models.FileField(upload_to='images/files',blank=True, null=True)
+    caption = models.CharField(max_length=250, default='')
+    description = models.CharField(max_length=2000, default='')
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    def filename(self):
+        return os.path.basename(self.item.name)
     
     

@@ -1,7 +1,9 @@
 
 
 $(document).ready(function(){
-    
+setInterval(function(){
+    console.log('K ', K['discussion']);
+},1000);
     M.create(Settings.createMap);
     K.locate();
     K.username = Cookie.get('username');
@@ -55,21 +57,7 @@ $(document).ready(function(){
         $('#startThread').find('textarea').focus();
         $(this).hide();
     });
-    $('#send').click(function(){
-        var message = $.trim($(this).siblings('textarea').val());
-        if (message == '') return;
-        var name = K.username;
-        if ($.trim(name)=='') {
-            $('#name').focus();
-            K.popup('Please enter a name','There is a field in the bottom right corner.',{millis:4500});
-            return;
-        }
-        AJAXF.send(message,name,K.discussion);
-        $(this).siblings('textarea').val('');
-        setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
-        $('#startThread').hide('fast');
-        $('#newThread').show();
-    });
+
     $('#dLink').click(function(){
         $(this).select();
     });
@@ -99,11 +87,10 @@ $(document).ready(function(){
         K.replyTo = null;
     });
     
-    $(document).on('click','.reply', function(){
-        var pk = this.id.replace('replied', '');
+    $(document).on('click','.send', function(){
+        var pk = this.id.replace('send', '');
         K.replyTo = pk;
         var text = $.trim($(this).siblings('textarea').val());
-        console.log('reply!', text);
         if (text == '') return;
         if (!K.username) {
             $(this).siblings('.errors').html('Please set a name');
@@ -111,12 +98,33 @@ $(document).ready(function(){
             setTimeout(function(){$('.errors').hide('slow');},1200);
             return;
         }
-        AJAXF.send(text, K.username, K.discussion, K.replyTo)
-        $('#reply'+pk).hide('fast');
-        $('#replyTo'+pk).show('fast');
-        $('#reply'+pk).find('textarea').val('');
+        AJAXF.send(text, K.username, K.discussion)
+        if (pk == 0) {
+            setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
+            $('#startThread').hide('fast');
+            $('#newThread').show();
+            console.log('discussion 12', K.discussion);
+        }else{
+            $('#reply'+pk).hide('fast');
+            $('#replyTo'+pk).show('fast');
+            $('#reply'+pk).find('textarea').val('');
+            K.replyTo = 0;
+        }
         $(this).siblings('textarea').val('')
-        K.replyTo = null;
+    });
+    
+    $(document).on('click', '.attach', function(){
+        var replyTo = this.id.replace('attach','');
+        $('#fileUpload').trigger('click');
+        $('#fileUpload').change(function(){
+            console.log($(this).val());
+            if ($(this).val()) K.file = replyTo;
+            else K.file = null;
+        });
+    });
+    
+    $(document).on('click', 'img', function(){
+        $(this).toggleClass('thumbnail full');
     });
     
     /* admin capabilities */
