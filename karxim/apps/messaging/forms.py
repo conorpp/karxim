@@ -42,6 +42,7 @@ class NewDiscussionForm(forms.ModelForm):
         self.lng =self.cleaned_data['lng']
         self.password = self.cleaned_data.get('password','').strip()
         self.status = self.cleaned_data.get('status')
+        self.location =self.cleaned_data.get('location',True)
         print 'STATUS' , self.status
         if not self.status:
             try:
@@ -93,7 +94,7 @@ class NewDiscussionForm(forms.ModelForm):
                 lng = self.lng,
                 title = self.title,
                 sessionid = self.session,
-                location = self.cleaned_data.get('location',True),
+                location = self.location,
                 startDate = self.date1,
                 endDate = self.date2
             )
@@ -103,7 +104,7 @@ class NewDiscussionForm(forms.ModelForm):
         elif self.status == 'edit':
             self.discussion = Discussion.objects.get(pk=self.cleaned_data['pk'])
             self.discussion.title = self.title
-            self.discussion.location = self.cleaned_data.get('location',True)
+            self.discussion.location = self.location
             self.discussion.startDate = self.date1
             self.discussion.endDate = self.date2
         else: raise forms.ValidationError('No status specified for saving.')

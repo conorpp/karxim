@@ -18,6 +18,7 @@ if REDIS.get('users') is None:      #for session id's
 
 
 def home(request):
+
     context = {
         'markers': DiscussionSerializer(Discussion.objects.filter(location = True).order_by('-lastActive')[:250]).data(),
     }
@@ -33,9 +34,18 @@ def start(request):
         if form.is_valid():
             form.save()
             data = DiscussionSerializer(form.discussion).data()
-            if not request.user.is_authenticated():
-                msg = {'TYPE':'private','sessionid':request.session['chatsession'],'title':'Limited Admin:','message':'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.'}
-                REDIS.publish(0,simplejson.dumps(msg))
+            title = 'Status'
+            message = ''
+            if form.status=='edit':
+                title = 'Edit'
+                message = 'Your discussion information has been updated successfully.'
+            elif not request.user.is_authenticated():
+                title ='Limited Admin:'
+                message = 'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.'
+            elif form.location: return HttpResponse(data)
+            if not form.location: message = message + '<br /><br /> Your discussion cannot be seen on the map.  Please save the link <a href="http://karxim.com/d/%s" >%s</a>' % (form.discussion.pk, form.discussion.title )
+            msg = {'TYPE':'private','sessionid':request.session['chatsession'],'title':title,'message':message}
+            REDIS.publish(0,simplejson.dumps(msg))
             return HttpResponse(data)
         else:
             print form.error

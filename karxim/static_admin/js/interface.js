@@ -86,10 +86,12 @@ var K = {
     
     initDiscForm: function(title){
         if (title == undefined) title = 'New Discussion';
-        $('.pDay').datepicker('destroy');
-        M.createMarker({'draggable':true,'start':true, 'content':T.newMark});
+        try{$('.pDay').datepicker('destroy');}catch(e){}
         K.popup(title,T.newDisc,{left:'1%',clone:true,id:'newDiscPopup'});
-        $('.pDay').datepicker({ altFormat: "mm-dd", minDate: new Date().toLocaleString()});
+        try{
+            M.createMarker({'draggable':true,'start':true, 'content':T.newMark});
+            $('.pDay').datepicker({ altFormat: "mm-dd", minDate: new Date().toLocaleString()});
+        }catch(e){}
     },
     
     getDiscValues: function(selector){
@@ -106,7 +108,7 @@ var K = {
             $('input.pw').focus();
             return false;
         }
-        $('.pDay').datepicker('destroy');
+        try{$('.pDay').datepicker('destroy');}catch(e){}
         K.newDisc = selector;
         console.log(this.newDiscStatus);
         if (this.newDiscStatus == 'new') {

@@ -114,5 +114,5 @@ Message.socket.on('admin', function(data) {
 });
 
 Message.socket.on('private', function(data) {
-    K.popup(data['title'],data['message'],{millis:8500});
+    K.popup(data['title'],data['message']);
 });   

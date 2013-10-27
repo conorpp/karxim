@@ -15,6 +15,8 @@ var AJAXF = {
                 if (!data['error']) {
                     K.newDisc.remove();
                     T.newDisc.find('input').val('');
+                    console.log(K.newDiscStatus);
+                    if (K.newDiscStatus == 'edit') return;
                     M.removeNewMark();
                     K.update(data,{'prepend':true});
                     if (data['admin']=='True') {
