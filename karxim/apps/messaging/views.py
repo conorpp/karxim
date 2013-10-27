@@ -1,5 +1,6 @@
 import redis
 
+from django.core import serializers
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect, render_to_response
 from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
@@ -203,6 +204,18 @@ def client(request):
     return HttpResponse(done)
     
     
+def info(request):
+    """ returns info in json about one discussion.  for editing. """
+    pk = request.GET.get('pk')
+    try:
+        d = Discussion.objects.filter(pk=pk)
+    except:
+        return HttpResponse(status=404)
+    fields = (
+        'startDate', 'endDate', 'private', 'password', 'title', 'location'
+    )
+    data = serializers.serialize('json', d, fields=fields)
+    return HttpResponse(data)
     
 
     

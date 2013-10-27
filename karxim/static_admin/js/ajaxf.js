@@ -1,23 +1,13 @@
 
 
 var AJAXF = {
-    makeDiscussion: function(latlng,title,password,loc, date, time) {
+    makeDiscussion: function() {
         K.loading();
-        console.log('date ', date);
-        console.log('time ', time);
+        console.log(K.discValues);
         $.ajax({
             type: 'POST',
             url: '/start/',
-            data: {
-                'lat': latlng.lat,
-                'lng': latlng.lng,
-                'title': title,
-                'password': password,
-                'location': loc,
-                'date': date,
-                'time': time,
-                'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-            },
+            data: K.discValues,
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
                 K.loaded();
@@ -25,13 +15,14 @@ var AJAXF = {
                 if (!data['error']) {
                     K.newDisc.remove();
                     T.newDisc.find('input').val('');
-                    K.removeNewMark();
+                    M.removeNewMark();
                     K.update(data,{'prepend':true});
                     if (data['admin']=='True') {
                         K.popup('Limited Admin Abilities',
                                 'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
                     }
                 }else{
+                    K.newDisc.html(T.newDisc);
                     $('#start').trigger('click');
                     K.popup(data['error']);
                 }
@@ -97,13 +88,14 @@ var AJAXF = {
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
                 if (data['error']) {
-                    K.showError(data['error']);
+                    K.popup(data['error']);
                 }
             }
         });
     },
     
     cAct:function(clients, action, pk){
+        K.loading();
         data  = {
             'clients': JSON.stringify(clients),
             'action': action,
@@ -117,6 +109,39 @@ var AJAXF = {
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
                 console.log('got response back ', data);
+            }
+        });
+    },
+    
+    edit: function(pk){
+        data  = {
+            'pk': pk,
+            }       
+        $.ajax({
+            type: 'GET',
+            url: '/edit/',
+            data:data,
+            dataType:'json',
+            success: function(data, textStatus,jqXHR) {
+                K.loaded();
+                console.log('got response back ', data);
+                var fields = data[0]['fields'];
+                var date1 = new Date(fields['startDate']);
+                var date2 = new Date(fields['endDate']);
+                var date = (date1.getMonth()+1)+'/'+date1.getDate()+'/'+date1.getFullYear();
+                var time1 = Message.time(date1);
+                var time2 = Message.time(date2);
+                T.newDisc.find('input.pDay').val(date);
+                T.newDisc.find('input.pTimeStart').val(time1);
+                T.newDisc.find('input.pTimeEnd').val(time2);
+                T.newDisc.find('input.dTitle').val(fields['title']);
+                T.newDisc.find('input.pw').val(fields['password']);
+                if (fields['private']) {
+                    $('.private').find('input[type="checkbox"]').trigger('click');
+                }
+                T.newDisc.find('.location').find('input[type="checkbox"]').attr('checked',fields['location']);
+                K.newDiscStatus = 'edit';
+                K.initDiscForm('Edit Discussion');
             }
         });
     }

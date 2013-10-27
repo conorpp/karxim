@@ -1,5 +1,6 @@
+
 from dateutil import parser
-import pytz
+
 from django import forms
 from django.utils import timezone
 from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin
@@ -14,11 +15,14 @@ class NewDiscussionForm(forms.ModelForm):
     lng = forms.FloatField(required = False)
     location = forms.BooleanField(required = False)
     date = forms.CharField(required = False)
-    time = forms.CharField(required = False)
+    startTime = forms.CharField(required = False)
+    endTime = forms.CharField(required = False)
+    status = forms.CharField(required = False)
+    pk = forms.CharField(required = False)
 
     class Meta:
         model = Discussion
-        fields = ('lat', 'lng', 'title','password','location','date', 'time')
+        fields = ('lat', 'lng', 'title','password','location','date','startTime','endTime','status','pk')
         
     def setFields(self, **kwargs):
         """
@@ -37,8 +41,17 @@ class NewDiscussionForm(forms.ModelForm):
         self.lat = self.cleaned_data['lat']
         self.lng =self.cleaned_data['lng']
         self.password = self.cleaned_data.get('password','').strip()
-        if not self.lat or not self.lng:
-            self.error = 'Try redragging the marker.  We failed to get the location.  We\'re  sorry.'
+        self.status = self.cleaned_data.get('status')
+        print 'STATUS' , self.status
+        if not self.status:
+            try:
+                pk = self.cleaned_data['pk']
+                d = Discussion.objects.get(pk=pk)
+                self.status = 'edit'
+            except:self.status = 'new'
+        if self.status == 'new':
+            if not self.lat or not self.lng:
+                self.error = 'Try redragging the marker.  We failed to get the location. Sorry about that.'
         elif not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
         else:
@@ -50,15 +63,23 @@ class NewDiscussionForm(forms.ModelForm):
                 if c>2:
                     self.error = 'Please take your time and try again in one minute'
             except:pass
-        tz = pytz.timezone(TIME_ZONE)
-        try:
-            date = self.cleaned_data['date']+' '+self.cleaned_data['time'] 
-            self.date = (parser.parse(date))
-            print 'FORMS TIME ',(parser.parse(date))
+
+        try:        #parse the times 
+            date1 = (self.cleaned_data['date']+' '+self.cleaned_data['startTime']).lower()
+            date2 = (self.cleaned_data['date']+' '+self.cleaned_data['endTime']).lower()
+            if date1.find('am') == -1 and date1.find('pm') == -1:
+                date1 += 'pm'
+            if date2.find('am') == -1 and date2.find('pm') == -1:
+                date2 += 'pm'
+            self.date1 = (parser.parse(date1))
+            self.date2 = (parser.parse(date2))
+            if self.date1 > self.date2:
+                self.date2 += timezone.timedelta(days=1)
+            print 'date 1',self.date1
+            print 'date 2',self.date2
         except Exception as e:
             print 'EXCEPTION getting start date ',e
             self.date = None
-        
         if self.error:
             raise forms.ValidationError(self.error)
         
@@ -66,19 +87,31 @@ class NewDiscussionForm(forms.ModelForm):
     
         
     def save(self, ):
-        self.discussion = Discussion.objects.create(
-            lat = self.lat,
-            lng = self.lng,
-            title = self.title,
-            sessionid = self.session,
-            location = self.cleaned_data.get('location',True),
-            startDate = self.date
-        )
-        a=Admin.objects.create(sessionid = self.session)
-        self.discussion.admins.add(a)
+        if self.status == 'new':
+            self.discussion = Discussion.objects.create(
+                lat = self.lat,
+                lng = self.lng,
+                title = self.title,
+                sessionid = self.session,
+                location = self.cleaned_data.get('location',True),
+                startDate = self.date1,
+                endDate = self.date2
+            )
+            a=Admin.objects.create(sessionid = self.session)
+            self.discussion.admins.add(a)
+
+        elif self.status == 'edit':
+            self.discussion = Discussion.objects.get(pk=self.cleaned_data['pk'])
+            self.discussion.title = self.title
+            self.discussion.location = self.cleaned_data.get('location',True)
+            self.discussion.startDate = self.date1
+            self.discussion.endDate = self.date2
+        else: raise forms.ValidationError('No status specified for saving.')
         if self.password:
             self.discussion.private=True
-            self.discussion.password=self.password
+        else:
+            self.discussion.private = False
+        self.discussion.password=self.password
         self.discussion.save()
         return self.discussion
     

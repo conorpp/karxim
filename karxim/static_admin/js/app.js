@@ -2,7 +2,7 @@
 
 $(document).ready(function(){
     
-    K.create(Settings.createMap);
+    M.create(Settings.createMap);
     K.locate();
     K.username = Cookie.get('username');
     if (K.username) {
@@ -11,41 +11,20 @@ $(document).ready(function(){
     }
     
     $('#start').on('click', function(){
-        $('.pDay').datepicker('destroy');
-        K.createMarker({'draggable':true,'start':true, 'content':T.newMark});
-        K.popup('New Discussion',T.newDisc,{left:'1%',clone:true,id:'newDiscPopup'});
-        $('.pDay').datepicker({ altFormat: "mm-dd", minDate: new Date().toLocaleString()});
+        K.newDiscStatus = 'new';
+        K.initDiscForm('New Discussion');
     });
     
     $(document).on('click','.private > input',function(){
         $('input.pw').toggle();
     });
     $(document).on('click', '.dCancel', function(){
-        K.removeNewMark();
+        M.removeNewMark();
     });
     $(document).on('click', '.dSubmit', function(){
-        var title = $(this).siblings('input[type="text"]').val();
-        var priv = $(this).siblings("div.private").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
-        var loc = $(this).siblings("div.location").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
-        var pw = $.trim($(this).siblings('input.pw').val());
-        if ($.trim(title)=='') {
-            K.popup('Title','We require that every discussion at least have a name. That\'s it.',{millis:2300});
-            return
-        };
-        if (priv=='True' && pw == '') {
-            K.popup('Password','Did you mean to enter a password?  If not, then please deselect private.',{millis:2300});
-            $('input.pw').focus();
-            return;
-        }
-        $('.pDay').datepicker('destroy');
-        K.newDisc = $(this).parents('.popupSpace');
-
-        var latlng = Map.newMark.getLatLng();
-        var date = K.newDisc.find('input.pDay').val();
-        var time = K.newDisc.find('input.pTime').val();
-        
-        K.newDisc.html(T.loadIcon);
-        AJAXF.makeDiscussion(latlng, title, pw, loc, date, time);
+        var selector = $(this).parents('.popupSpace');
+        if (!K.getDiscValues(selector))return;
+        AJAXF.makeDiscussion();
     });
     $(document).on('click', '.join', function(){
         var pk = this.id.replace('join','');
@@ -68,7 +47,7 @@ $(document).ready(function(){
         var parent = $(this).parents('.popupSpace');
         parent.hide();
         if (parent.attr('id') == 'newDiscPopup') {
-            K.removeNewMark();
+            M.removeNewMark();
         }
     });
     $('#newThread').click(function(){
@@ -151,6 +130,9 @@ $(document).ready(function(){
         K.cAction = 'ban';
         $('.adminAction').html('Removing a client . . .');
         K.cSelect();
+    });
+    $(document).on('click','.editAdmin',function(){
+        AJAXF.edit(K.discussion);
     });
     $(document).on('click', '.doneAdmin',function(){
         K.cAct();

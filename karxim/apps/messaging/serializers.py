@@ -58,7 +58,6 @@ class MessageSerializer():
             )
         
     def data(self, **kwargs):
-        
         try:
             messages = self.serialize(self.messages.filter(stem=0))    #queryset
         except Exception as e:

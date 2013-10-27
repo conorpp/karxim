@@ -8,17 +8,19 @@
 
 <div id="newDisc">
   <div class="center">
-    <input type="text" placeholder=" Discussion title">{% csrf_token %}
-    <div class="clearL fs12 private mar5">Private <input type="checkbox" title="Make this discussion password protected"> </div>
+    <input type="text" placeholder=" Discussion title" class="dTitle">
+    <div class="clearL fs12 private mar5" title="Make this discussion password protected">Private <input type="checkbox"> </div>
     <input type="text" placeholder=" Discussion password" class="hide pw mar5">
     <div class="selectTime">
       <p class="fs7">Set a time (optional)</p>
-      <input type="text" placeholder="Day" class="pDay" >
-      <input type="text" placeholder="Time" class="pTime" >
+      <input type="text" placeholder="Day" class="pDay mar10" >
+      <input type="text" placeholder="Start time" class="pTimeStart" > to
+      <input type="text" placeholder="End time" class="pTimeEnd" >
     </div>
-    <div class="clearL fs12 checkbox location mar5">Show location <input type="checkbox" title="Checking this means your discussion will show on the map." checked> </div>
+    <div class="clearL fs12 checkbox location mar5" title="Checking this means your discussion will show on the map." >Show location <input type="checkbox" checked> </div>
     <button class="dSubmit background1 mar5">Save</button>
     <div class="errors"></div>
+    {% csrf_token %}
   </div>
 </div>
 
@@ -43,6 +45,7 @@
   <div class="admin pad5 left4 fright top0 abs">
     <button class="cancelAdmin hide background5">Cancel</button>
     <button class="doneAdmin hide background1">Submit</button>
+    <button class="editAdmin background4">Edit</button>
     <button class="addAdmin background4">Add admin</button>
     <button class="removeClient background4">Remove client</button>
     <div class="color0 adminAction hide abs"></div>

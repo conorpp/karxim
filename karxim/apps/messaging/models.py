@@ -27,10 +27,13 @@ class Discussion(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     usersPosted = models.IntegerField(default=0)
     totalMessages = models.IntegerField(default=0)
+    password = models.CharField(max_length=100, default='')
+    private = models.BooleanField(default = False)
+    startDate = models.DateTimeField(null=True, blank=True, default=None)
+    endDate = models.DateTimeField(null=True, blank=True, default=None)
     
     lat = models.CharField(max_length=50)
     lng = models.CharField(max_length=50)
-    distance = models.FloatField(default = 0)
     location = models.BooleanField(default = True)
     
     #the following not implemented
@@ -38,10 +41,7 @@ class Discussion(models.Model):
     description = models.TextField(max_length=10000)
     explicit = models.BooleanField(default=False)
     index = models.CharField(max_length=18, db_index=True, default='0')
-    password = models.CharField(max_length=100, default='')
-    private = models.BooleanField(default = False)
-    startDate = models.DateTimeField(null=True, blank=True, default=None)
-    endDate = models.DateTimeField(null=True, blank=True, default=None)
+    distance = models.FloatField(default = 0)
     upVote = models.IntegerField(default=0, db_index=True)
     downVote = models.IntegerField(default=0)
     
@@ -49,32 +49,22 @@ class Discussion(models.Model):
         return self.title
     
     def schedule(self, ):
-        print 'start ', self.startDate
-        print 'end ', self.endDate
-        print 'now ', timezone.localtime(timezone.now())
-        if self.startDate is None:
-            print '1'
-            return ''
-        if self.startDate > timezone.now() + timezone.timedelta(hours=12):
-            print '2'
-            return self.startDate
-        
 
-        elif self.startDate > timezone.now():
+        if self.startDate is None:
+            if self.endDate: return 'Active.  Ends %s' % naturaltime(self.endDate)
+            return ''
+
+        if self.startDate > timezone.now():
             return 'Begins %s '% naturaltime(self.startDate)
         
         elif self.endDate:
-            print '3'
             if self.endDate > timezone.now():
-                print '4'
-                return 'In progress.  Ending in %s' % naturaltime(self.endDate)
+                return 'In progress.  Ending %s' % naturaltime(self.endDate)
             
             else:
-                print '5'
                 return 'This discussion ended %s' % naturaltime(self.endDate)
         
         else:
-            print '6'
             return 'Started %s' % naturaltime(self.startDate)
     
     def age(self):
@@ -106,8 +96,10 @@ class Message(models.Model):
     distance = models.FloatField(default = 0)
     lastActive = models.DateTimeField(auto_now_add=True, default=timezone.now(), db_index=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
+    
     #following not implemented
     image = models.ImageField(upload_to='/images',blank=True, null=True)
+    item = models.FileField(upload_to='/images/files',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
     def __unicode__(self, ):
         return self.text
@@ -132,7 +124,6 @@ class Message(models.Model):
         except Exception as e:
             print 'all done traversing parents'
 
-    
     
     
     

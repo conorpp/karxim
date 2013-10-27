@@ -58,8 +58,8 @@ var Message = {
 
 
     /* returns time like '9:06 pm' */
-    time: function(){
-        var date = new Date();
+    time: function(date){
+        if(date == undefined) date = new Date();
         var hours = date.getHours();
         var half = 'am';
         var minutes = date.getMinutes();
