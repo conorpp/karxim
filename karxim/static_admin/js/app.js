@@ -1,9 +1,7 @@
 
 
 $(document).ready(function(){
-setInterval(function(){
-    console.log('K ', K['discussion']);
-},1000);
+
     M.create(Settings.createMap);
     K.locate();
     K.username = Cookie.get('username');
@@ -86,16 +84,20 @@ setInterval(function(){
         $('#replyTo'+pk).show('fast');
         K.replyTo = null;
     });
-    
+    var files
     $(document).on('click','.send', function(){
+        console.log('clciked');
         var pk = this.id.replace('send', '');
         K.replyTo = pk;
         var text = $.trim($(this).siblings('textarea').val());
         if (text == '') return;
         if (!K.username) {
-            $(this).siblings('.errors').html('Please set a name');
-            $(this).siblings('.errors').show('fast');
-            setTimeout(function(){$('.errors').hide('slow');},1200);
+            K.popup('Please set a name','The field is in the lower right corner.',{millis:3500});
+            $('#name').focus();
+            return;
+        }
+        if (files.length>5) {
+            K.popup('File limit', 'You can\'t upload more than five files at a time.',{millis:4000});
             return;
         }
         AJAXF.send(text, K.username, K.discussion)
@@ -115,9 +117,12 @@ setInterval(function(){
     
     $(document).on('click', '.attach', function(){
         var replyTo = this.id.replace('attach','');
+        var button = this;
         $('#fileUpload').trigger('click');
         $('#fileUpload').change(function(){
-            console.log($(this).val());
+            files = $(this).prop("files");
+            var names = $.map(files, function(val) { return ' '+val.name; });
+            $(button).siblings('.attachments').html('Attached: '+names);
             if ($(this).val()) K.file = replyTo;
             else K.file = null;
         });

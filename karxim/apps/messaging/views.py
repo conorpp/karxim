@@ -105,19 +105,20 @@ def send(request):
         pk = request.POST['pk']
         print 'request : ',request.POST
         form = NewMessageForm(request.POST)
+        chatsession = request.session.get('chatsession',None)
         form.setFields(replyTo = request.POST.get('replyTo',None),
-                       chatsession=request.session.get('chatsession',None))
-
-        if not form.is_valid():
-            data = simplejson.dumps({'error':form.error})
-            return HttpResponse(data)
+                       chatsession=chatsession)
         form.setFiles(request.FILES.getlist('files'))
+        if not form.is_valid():
+            data = simplejson.dumps({'error':form.error,'TYPE':'private','sessionid':chatsession,'title':'Error','message':form.error})
+            REDIS.publish(0,data)
+            return HttpResponse()
         form.save()
         data = {'TYPE':'message',
                 'replyTo':form.replyTo,
                 'pk':form.newPk,
                 'discussion':form.discussion.pk
-                }
+            }
         m ={
             'pk':form.newPk,
             'username':form.name,
@@ -125,7 +126,7 @@ def send(request):
             'stem':form.stem,
             'distance': form.distance,
             'age':timezone.now().strftime('%I:%M %p'),
-            'file_set':form.allFiles
+            'file_set2':{'images':form.pics, 'files':form.files}
             }
                 
         data['html'] = render_to_string('parts/message.html',{

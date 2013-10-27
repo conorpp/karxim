@@ -130,7 +130,11 @@ class NewMessageForm(forms.ModelForm):
         try:self.replyTo = int(kwargs.get('replyTo', 0))
         except: self.replyTo = 0
         self.session = kwargs.get('chatsession',None)
-
+        
+    def setFiles(self, files):
+        print 'GOT FILES', files
+        self.rawFiles = files
+        
     def clean(self):
         """validation"""
         if any(self.errors):
@@ -163,7 +167,23 @@ class NewMessageForm(forms.ModelForm):
                 if c>2:
                     self.error = 'Please take your time with those messages.'
             except:pass
-            
+        if self.rawFiles:
+            self.pics = []
+            self.files = []
+            if len(self.rawFiles) <6:
+                for f in self.rawFiles:
+
+                    try:
+                        ext = f.name.rsplit('.',1)[1]
+                        if ext.lower() in ['jpg', 'jpeg', 'gif', 'png']:
+                            self.pics.append(f)
+                        else: self.files.append(f)
+                    except: self.files.append(f)
+            else: self.error = 'You can only upload up to 5 files at a time.'
+        else:
+
+            self.pics, self.files,self.allFiles =None,None,None
+
         if self.error is None:
             try:
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
@@ -184,25 +204,6 @@ class NewMessageForm(forms.ModelForm):
         
     def getError(self, ):
         return self.error
-    
-    def setFiles(self, files):
-        print 'GOT FILES', files
-        if files:
-            self.pics = []
-            self.files = []
-            print 'files evaluated as True'
-            for f in files:
-                print 'enter for loop'
-                try:
-                    ext = f.name.rsplit('.',1)[1]
-                    if ext.lower() in ['jpg', 'jpeg', 'gif', 'png']:
-                        self.pics.append(f)
-                    else: self.files.append(f)
-                except: self.files.append(f)
-            self.allFiles = self.pics+self.files
-        else:
-            print 'files evaluated as False'
-            self.pics, self.files,self.allFiles =None,None,None
     
     def save(self ):
         """ creates message and increments new message count in convo """

@@ -85,15 +85,15 @@ var AJAXF = {
         }catch(e){}
         if (K.file && K.file == K.replyTo) {
             var fileForm = $('#messageFile');
-            console.log('UPLOADING FILE!');
             for (var key in data){
-                console.log('adding key '+key+' for val ', data);
                 var input = fileForm.find('input[name="'+key+'"]');
                 if (input) input.val(data[key]);
-                console.log('value of form input is ', input.val());
             }
-            console.log('SUBMITING FILE FORM!');
             fileForm.submit();
+            //clear files from input file.  hackish
+            var fileInput = fileForm.find('#fileUpload').clone();
+            fileForm.find('#fileUpload').remove();
+            fileForm.append(fileInput);
             return;
         }
         $.ajax({

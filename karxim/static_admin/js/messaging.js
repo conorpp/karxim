@@ -81,12 +81,10 @@ var Message = {
     
 };
 
-
 Message.connect();
 
 Message.socket.on('getMessage', function(data) {
-    console.log('discuss', Message.discussion);
-    if (data['discussion'] != Message.discussion) return;
+    if (data['discussion'] != K.discussion) return;
     var pk = data['pk'];
     var message = data['html'];
     if (data['replyTo']) {

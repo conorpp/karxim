@@ -29,7 +29,7 @@ var K = {
     password:null,
     userCoords:null,
     username:'',
-    replyTo:0,
+    replyTo:null,
     file:null,
     discValues:{},
     newDiscStatus:'new',
@@ -73,7 +73,9 @@ var K = {
     },
     /* loads up a discussion for a given pk.  password optional. */
     loadDisc: function(pk, password){
-        this['discussion'] = pk;
+        this.discussion = pk;
+        console.log('new d is pk ',pk);
+        console.log('new d is pk 2',this.discussion);
         if (password) this.password = password;
         AJAXF.getMessages(pk);
         var title = $('#discussion'+pk).find('h2').html();
