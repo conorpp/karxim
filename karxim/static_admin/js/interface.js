@@ -92,8 +92,9 @@ var K = {
         try{$('.pDay').datepicker('destroy');}catch(e){}
         K.popup(title,T.newDisc,{left:'1%',clone:true,id:'newDiscPopup'});
         try{
+            $('.pDay').datepicker({ altFormat: "yyyy-mm-dd", minDate:0});
+            console.log(new Date().toLocaleString());
             M.createMarker({'draggable':true,'start':true, 'content':T.newMark});
-            $('.pDay').datepicker({ altFormat: "mm-dd", minDate: new Date().toLocaleString()});
         }catch(e){}
     },
     
