@@ -36,10 +36,12 @@ class ChatMiddleware():
             request.COOKIES['username']
             return response
         except:
-            username = request.session.get('username')
-            if username:
-                set_cookie(response, 'username', username,signed=False)
-            return response
+            try:
+                username = request.session.get('username')
+                if username:
+                    set_cookie(response, 'username', username,signed=False)
+                return response
+            except:return response
             
 
 #global template variables
