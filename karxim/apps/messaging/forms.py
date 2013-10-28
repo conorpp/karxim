@@ -65,22 +65,29 @@ class NewDiscussionForm(forms.ModelForm):
                     self.error = 'Please take your time and try again in one minute'
             except:pass
 
-        try:        #parse the times 
-            date1 = (self.cleaned_data['date']+' '+self.cleaned_data['startTime']).lower()
-            date2 = (self.cleaned_data['date']+' '+self.cleaned_data['endTime']).lower()
-            if date1.find('am') == -1 and date1.find('pm') == -1:
-                date1 += 'pm'
-            if date2.find('am') == -1 and date2.find('pm') == -1:
-                date2 += 'pm'
-            self.date1 = (parser.parse(date1))
-            self.date2 = (parser.parse(date2))
-            if self.date1 > self.date2:
+        try:        #parse the times
+            print self.cleaned_data['date']
+            print self.cleaned_data['startTime']
+            print self.cleaned_data['endTime']
+            time1 = str(self.cleaned_data.get('startTime',''))
+            time2 = str(self.cleaned_data.get('endTime',''))
+            if time1:
+                date1 = (str(self.cleaned_data['date'])+' '+time1).lower()
+                if date1.find('am') == -1 and date1.find('pm') == -1:
+                    date1 += 'pm'
+                self.date1 = (parser.parse(date1))
+            else: self.date1 = None
+            if time2:
+                date2 = (str(self.cleaned_data['date'])+' '+time2).lower()
+                if date2.find('am') == -1 and date2.find('pm') == -1:
+                    date2 += 'pm'
+                self.date2 = (parser.parse(date2))
+            else: self.date2 = None
+            if self.date1 and self.date2 and self.date1 > self.date2:
                 self.date2 += timezone.timedelta(days=1)
-            print 'date 1',self.date1
-            print 'date 2',self.date2
-        except Exception as e:
+        except ArithmeticError:
             print 'EXCEPTION getting start date ',e
-            self.date = None
+            self.date1, self.date2 = None,None
         if self.error:
             raise forms.ValidationError(self.error)
         
