@@ -84,7 +84,7 @@ $(document).ready(function(){
         $('#replyTo'+pk).show('fast');
         K.replyTo = null;
     });
-    var files
+    var files = new Array();
     $(document).on('click','.send', function(){
         console.log('clciked');
         var pk = this.id.replace('send', '');
