@@ -39,9 +39,10 @@ def start(request):
             if form.status=='edit':
                 title = 'Edit'
                 message = 'Your discussion information has been updated successfully.'
-            elif not request.user.is_authenticated():
-                title ='Limited Admin:'
-                message = 'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.'
+            #Leaving out until user registration is available.
+            #elif not request.user.is_authenticated():
+            #    title ='Limited Admin:'
+            #    message = 'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.'
             elif form.location: return HttpResponse(data)
             if not form.location: message = message + '<br /><br /> Your discussion cannot be seen on the map.  Please save the link <a href="http://karxim.com/d/%s" >%s</a>' % (form.discussion.pk, form.discussion.title )
             msg = {'TYPE':'private','sessionid':request.session['chatsession'],'title':title,'message':message}

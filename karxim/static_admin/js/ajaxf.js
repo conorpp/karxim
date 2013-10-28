@@ -20,8 +20,9 @@ var AJAXF = {
                     M.removeNewMark();
                     K.update(data,{'prepend':true});
                     if (data['admin']=='True') {
-                        K.popup('Limited Admin Abilities',
-                                'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
+                        //leaving out until registration is available.
+                        //K.popup('Limited Admin Abilities',
+                        //        'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
                     }
                 }else{
                     K.newDisc.html(T.newDisc);
