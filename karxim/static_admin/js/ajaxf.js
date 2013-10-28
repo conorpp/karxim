@@ -19,11 +19,11 @@ var AJAXF = {
                     if (K.newDiscStatus == 'edit') return;
                     M.removeNewMark();
                     K.update(data,{'prepend':true});
-                    if (data['admin']=='True') {
+                    //if (data['admin']=='True') {
                         //leaving out until registration is available.
-                        //K.popup('Limited Admin Abilities',
-                        //        'Since you do not have an account, we can only track your admin status for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> If you\'d like a permanent status, please log in or sign up.');
-                    }
+                        K.popup('Limited Admin Status',
+                                'We can only track your admin status for this discussion for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> The option to register and have permanent admin status will be available soon.');
+                    //}
                 }else{
                     K.newDisc.html(T.newDisc);
                     $('#start').trigger('click');
