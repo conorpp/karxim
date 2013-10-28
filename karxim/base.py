@@ -1,7 +1,7 @@
 
 from django.template.loader import render_to_string
 
-from karxim.functions import REDIS, pubLog
+from karxim.functions import REDIS, pubLog, set_cookie
 from karxim.settings import SOCKET_URL
 
 
@@ -9,33 +9,36 @@ class ChatMiddleware():
     
     def process_view(self, request, view_func, *view_args, **view_kwargs):
         try:
-            pubLog('current SESH :'+str(request.session.session_key)+' = '+str(request.session['chatsession']))
+            #pubLog('current SESH :'+str(request.session.session_key)+' = '+str(request.session['chatsession']))
             if REDIS.get(request.session.session_key) != request.session['chatsession']:
                 REDIS.set(request.session.session_key, request.session['chatsession'])
+            username = request.COOKIES.get('username')
+            if username:
+                request.session['username'] = username
         except Exception as e:
             chatsession = REDIS.get('users')
             REDIS.set('users',int(chatsession)+1)
             request.session['chatsession'] = chatsession
             request.session.save()
-            pubLog('NEW SESH : '+str(request.session.session_key)+' = '+ chatsession)
-            pubLog('the exception '+str(e))
+            #pubLog('NEW SESH : '+str(request.session.session_key)+' = '+ chatsession)
+            #pubLog('the exception '+str(e))
             print str(request.session.session_key)+' = '+ chatsession
             REDIS.set(request.session.session_key, chatsession)
         return None
 
-    def XXXprocess_response(self, request, response):
+    def process_response(self, request, response):
         """
             automatically check/add cookie id
             for spam protection.  Increment redis store.
+            add username to make it cross domain.
         """
         try:
-            request.COOKIES['chatsession']
+            request.COOKIES['username']
             return response
-        except Exception as e:
-            session = REDIS.get('users')
-            print session
-            REDIS.set('users',int(session)+1)
-            set_cookie(response, 'chatsession', session)
+        except:
+            username = request.session.get('username')
+            if username:
+                set_cookie(response, 'username', username,signed=False)
             return response
             
 
