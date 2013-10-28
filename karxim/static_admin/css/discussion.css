@@ -33,9 +33,7 @@
     display: inline-block;
     margin:5px;
 }
-#sendWrap textarea{
-    padding: 20px;
-}
+
 #sendWrap #send{
     padding: 20px;
 }
