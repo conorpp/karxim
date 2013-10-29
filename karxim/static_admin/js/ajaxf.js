@@ -128,13 +128,18 @@ var AJAXF = {
                 console.log('got response back ', data);
                 var fields = data[0]['fields'];
                 var date1 = new Date(fields['startDate']);
-                var date2 = new Date(fields['endDate']);
-                var date = (date1.getMonth()+1)+'/'+date1.getDate()+'/'+date1.getFullYear();
-                var time1 = Message.time(date1);
-                var time2 = Message.time(date2);
-                T.newDisc.find('input.pDay').val(date);
-                T.newDisc.find('input.pTimeStart').val(time1);
-                T.newDisc.find('input.pTimeEnd').val(time2);
+                if (fields['startDate']) {
+                    var date1 = new Date(fields['startDate']);
+                    var time1 = Message.time(date1);
+                    var date = (date1.getMonth()+1)+'/'+date1.getDate()+'/'+date1.getFullYear();
+                    T.newDisc.find('input.pDay').val(date);
+                    T.newDisc.find('input.pTimeStart').val(time1);
+                    if (fields['endDate']) {
+                        var date2 = new Date(fields['endDate']);
+                        var time2 = Message.time(date2);
+                        T.newDisc.find('input.pTimeEnd').val(time2);
+                    }
+                }
                 T.newDisc.find('input.dTitle').val(fields['title']);
                 T.newDisc.find('input.pw').val(fields['password']);
                 if (fields['private']) {
