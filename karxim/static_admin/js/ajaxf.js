@@ -109,6 +109,7 @@ var AJAXF = {
             data:data,
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
+                K.loaded();
                 console.log('got response back ', data);
             }
         });
