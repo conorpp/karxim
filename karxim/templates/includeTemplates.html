@@ -6,6 +6,7 @@
   <h1>Move to a location</h1>
 </div>
 
+{#      new discussion and edit form      #}
 <div id="newDisc">
   <div class="center">
     <input type="text" placeholder=" Discussion title" class="dTitle">
@@ -19,9 +20,17 @@
     </div>
     <div class="clearL fs12 checkbox location mar5" title="Checking this means your discussion will show on the map." >Show location <input type="checkbox" checked> </div>
     <button class="dSubmit background1 mar5">Save</button>
+    <button class="background5 mar5 hide delete" >Delete</button>
     <div class="errors"></div>
     {% csrf_token %}
   </div>
+</div>
+
+{#      Delete prompt     #}
+<div id="deletePrompt">
+  <p>This discussion will be removed immediately.  Are you sure you want to do this?</p>
+  <button class="background5 mar5 pX" id="deleteCommit">Delete</button>
+  <button class="background4 mar5 pX" >Cancel</button>
 </div>
 
 {#      Load icon       #}

@@ -98,6 +98,11 @@ Message.socket.on('getMessage', function(data) {
 
 Message.socket.on('update', function(data) {
     console.log('data update',data);
+    if (data['stack']) {
+        var stack = S[data['stack']+'Stack'];
+        for(i in stack) stack[i](data);
+        return;
+    }
     K.announce(data['announcement']);   
 });
 

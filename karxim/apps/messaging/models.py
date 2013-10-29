@@ -33,6 +33,7 @@ class Discussion(models.Model):
     private = models.BooleanField(default = False)
     startDate = models.DateTimeField(null=True, blank=True, default=None)
     endDate = models.DateTimeField(null=True, blank=True, default=None)
+    removed = models.BooleanField(default=False)
     
     lat = models.CharField(max_length=50)
     lng = models.CharField(max_length=50)

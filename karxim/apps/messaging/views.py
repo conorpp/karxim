@@ -20,7 +20,7 @@ if REDIS.get('users') is None:      #for session id's
 def home(request):
 
     context = {
-        'markers': DiscussionSerializer(Discussion.objects.filter(location = True).order_by('-lastActive')[:250]).data(),
+        'markers': DiscussionSerializer(Discussion.objects.filter(location = True,removed=False).order_by('-lastActive')[:250]).data(),
     }
     return render(request, 'index.html', context)
 
@@ -39,6 +39,10 @@ def start(request):
             if form.status=='edit':
                 title = 'Edit'
                 message = 'Your discussion information has been updated successfully.'
+            elif form.status == 'delete':
+                data = simplejson.dumps({'TYPE':'update','stack':'delete','pk':form.discussion.pk})
+                REDIS.publish(form.discussion.pk, data)
+                return HttpResponse(data)
             #Leaving out until user registration is available.
             #elif not request.user.is_authenticated():
             #    title ='Limited Admin:'
@@ -57,7 +61,7 @@ def messages(request):
     pk = request.POST['pk']
     admin=False
     error=None
-    d = Discussion.objects.get(pk=pk)
+    d = Discussion.objects.filter(removed=False).get(pk=pk)
     
     try:
         sessionid = request.session['chatsession']
@@ -148,7 +152,7 @@ def discussion(request,pk='0'):
     try:
         print 'got pk', pk
         pk = int(pk)
-        d = Discussion.objects.get(pk=pk)
+        d = Discussion.objects.filter(removed=False).get(pk=pk)
             
         sessionid = request.session['chatsession']
         if d.admins.filter(sessionid = sessionid).count():
@@ -195,7 +199,7 @@ def client(request):
                 continue
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
-            data = {'TYPE':'ban','pk':pk, 'sessionid':sessionid,'announcement':'User %s has been removed' % (m.username), 'message':'You have been removed from dicussion %s' % d.title}
+            data = {'TYPE':'ban','pk':pk, 'sessionid':sessionid,'stack':'announce','announcement':'User %s has been removed' % (m.username), 'message':'You have been removed from dicussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
     elif action == 'admin':
@@ -209,7 +213,7 @@ def client(request):
                 REDIS.publish(0, simplejson.dumps(data2))
                 print 'Ban removed'
             except Exception as e: pubLog('removing ban error'+str(e))
-            data = {'TYPE':'admin', 'sessionid':sessionid,'announcement':'User %s has been made an Admin' % (m.username), 'message':'You have been made an admin for discussion %s' % d.title}
+            data = {'TYPE':'admin', 'sessionid':sessionid,'stack':'announce','announcement':'User %s has been made an Admin' % (m.username), 'message':'You have been made an admin for discussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
             

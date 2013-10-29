@@ -10,5 +10,5 @@ urlpatterns = patterns('karxim.apps.messaging.views',
     url(r'^administrate/$', 'admin'),
     url(r'^d/(?P<pk>[0-9]*)/$', 'discussion'),
     url(r'^clients/change/$', 'client'),
-    url(r'^edit/$', 'info')
+    url(r'^info/$', 'info')
 )

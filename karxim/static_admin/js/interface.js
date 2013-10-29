@@ -5,7 +5,8 @@
     Map - the MapBox map object.
     M - namespace for working with map.
     Cookie - managing cookies
-    Messaging.js/Message - Messaging + node functions
+    messaging.js/Message - Messaging + node functions
+    success.js/S - success functions to call for after ajax requests.
 */
 
 var K = {
@@ -91,18 +92,31 @@ var K = {
         if (title == undefined) title = 'New Discussion';
         try{$('.pDay').datepicker('destroy');}catch(e){}
         K.popup(title,T.newDisc,{left:'1%',clone:true,id:'newDiscPopup'});
+        $('.delete').hide();
         try{
             $('.pDay').datepicker({ altFormat: "yyyy-mm-dd", minDate:0});
             console.log(new Date().toLocaleString());
             M.createMarker({'draggable':true,'start':true, 'content':T.newMark});
         }catch(e){}
+        console.log('k new disc',K.newDisc);
     },
     
+    deleteDiscForm: function(){
+        $('#newDiscPopup').remove();
+        console.log('removing ', K.newDisc);
+        T.newDisc.find('input').val('');
+        try{M.removeNewMark();}catch(e){}
+    },
+    /* get values of new disc form and validates with popup. */
     getDiscValues: function(selector){
         this.discValues.title = T.newDisc.find('input[type="text"].dTitle').val();
         this.discValues['private'] = T.newDisc.find("div.private").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
         this.discValues.location = T.newDisc.find("div.location").find('input[type="checkbox"]').is(':checked') ? "True" : "False";
         this.discValues.password = $.trim(T.newDisc.find('input.pw').val());
+        this.discValues.status = K.newDiscStatus;
+        this.discValues.pk = this.discussion;
+        this.discValues.csrfmiddlewaretoken = $("input[name=csrfmiddlewaretoken]").val();
+        if (this.newDiscStatus == 'delete') return true;
         if ($.trim(this.discValues.title)=='') {
             this.popup('Title','We require that every discussion at least have a name. That\'s it.',{millis:2300});
             return false;
@@ -113,20 +127,15 @@ var K = {
             return false;
         }
         try{$('.pDay').datepicker('destroy');}catch(e){}
-        K.newDisc = selector;
         console.log(this.newDiscStatus);
         if (this.newDiscStatus == 'new') {
             var latlng = Map.newMark.getLatLng();
             this.discValues.lat = latlng.lat;
             this.discValues.lng = latlng.lng;
-        }else if (this.newDiscStatus == 'edit') {
-            this.discValues.pk = this.discussion;
         }
         this.discValues.date = T.newDisc.find('input.pDay').val();
         this.discValues.startTime = T.newDisc.find('input.pTimeStart').val();
         this.discValues.endTime = T.newDisc.find('input.pTimeEnd').val();
-        this.discValues.status = K.newDiscStatus;
-        this.discValues.csrfmiddlewaretoken = $("input[name=csrfmiddlewaretoken]").val();
         return true;
     },
     /* IMPORTANT.  this must be called everytime a discussion is closed whilst still on same page. */
@@ -334,8 +343,10 @@ $(document).ready(function(){
         
         announce: $('#annouceTemplate'),
         
-        newDisc: $('#newDisc')
+        newDisc: $('#newDisc'),
         
+        deletePrompt: $('#deletePrompt')
+                
     }
 });
 

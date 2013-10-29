@@ -24,7 +24,13 @@ $(document).ready(function(){
     $(document).on('click', '.dSubmit', function(){
         var selector = $(this).parents('.popupSpace');
         if (!K.getDiscValues(selector))return;
-        AJAXF.makeDiscussion();
+        
+        var stack = S[K.newDiscStatus+'Stack'];
+        console.log(K.newDiscStatus+'Stack');
+        console.log(S.newStack);
+        console.log(stack);
+        
+        AJAXF.makeDiscussion(stack);
     });
     $(document).on('click', '.join', function(){
         var pk = this.id.replace('join','');
@@ -47,7 +53,7 @@ $(document).ready(function(){
         var parent = $(this).parents('.popupSpace');
         parent.hide();
         if (parent.attr('id') == 'newDiscPopup') {
-            M.removeNewMark();
+            try{M.removeNewMark();}catch(e){}
         }
     });
     $('#newThread').click(function(){
@@ -145,7 +151,7 @@ $(document).ready(function(){
         K.cSelect();
     });
     $(document).on('click','.editAdmin',function(){
-        AJAXF.edit(K.discussion);
+        AJAXF.info(K.discussion);
     });
     $(document).on('click', '.doneAdmin',function(){
         K.cAct();
@@ -153,6 +159,13 @@ $(document).ready(function(){
     $(document).on('click', '.cancelAdmin',function(){
         K.cAction=null;
         K.cAct();
+    });
+    $(document).on('click','.delete',function(){
+        K.popup('Delete',T.deletePrompt);
+    });
+    $(document).on('click','#deleteCommit',function(){
+        K.newDiscStatus = 'delete';
+        $('.dSubmit').trigger('click');
     });
     
 });

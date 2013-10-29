@@ -44,6 +44,7 @@ class NewDiscussionForm(forms.ModelForm):
         self.status = self.cleaned_data.get('status')
         self.location =self.cleaned_data.get('location',True)
         print 'STATUS' , self.status
+        if self.status == 'delete': return self.cleaned_data
         if not self.status:
             try:
                 pk = self.cleaned_data['pk']
@@ -53,7 +54,7 @@ class NewDiscussionForm(forms.ModelForm):
         if self.status == 'new':
             if not self.lat or not self.lng:
                 self.error = 'Try redragging the marker.  We failed to get the location. Sorry about that.'
-        elif not self.session:
+        if not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
         else:
             try:
@@ -66,9 +67,6 @@ class NewDiscussionForm(forms.ModelForm):
             except:pass
 
         try:        #parse the times
-            print self.cleaned_data['date']
-            print self.cleaned_data['startTime']
-            print self.cleaned_data['endTime']
             time1 = str(self.cleaned_data.get('startTime',''))
             time2 = str(self.cleaned_data.get('endTime',''))
             if time1:
@@ -114,7 +112,11 @@ class NewDiscussionForm(forms.ModelForm):
             self.discussion.location = self.location
             self.discussion.startDate = self.date1
             self.discussion.endDate = self.date2
+        elif self.status == 'delete':
+            self.discussion = Discussion.objects.get(pk=self.cleaned_data['pk'])
+            self.discussion.removed = True
         else: raise forms.ValidationError('No status specified for saving.')
+        
         if self.password:
             self.discussion.private=True
         else:

@@ -1,9 +1,10 @@
 
 
 var AJAXF = {
-    makeDiscussion: function() {
+    makeDiscussion: function(funcArray) {
         K.loading();
         console.log(K.discValues);
+        K.deleteDiscForm();
         $.ajax({
             type: 'POST',
             url: '/start/',
@@ -12,23 +13,7 @@ var AJAXF = {
             success: function(data, textStatus,jqXHR) {
                 K.loaded();
                 console.log('GOT DATA',data);
-                if (!data['error']) {
-                    K.newDisc.remove();
-                    T.newDisc.find('input').val('');
-                    console.log(K.newDiscStatus);
-                    if (K.newDiscStatus == 'edit') return;
-                    M.removeNewMark();
-                    K.update(data,{'prepend':true});
-                    //if (data['admin']=='True') {
-                        //leaving out until registration is available.
-                        K.popup('Limited Admin Status',
-                                'We can only track your admin status for this discussion for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> The option to register and have permanent admin status will be available soon.');
-                    //}
-                }else{
-                    K.newDisc.html(T.newDisc);
-                    $('#start').trigger('click');
-                    K.popup(data['error']);
-                }
+                for (i in funcArray) funcArray[i](data);
             }
         });
     },
@@ -129,13 +114,13 @@ var AJAXF = {
         });
     },
     
-    edit: function(pk){
+    info: function(pk){
         data  = {
             'pk': pk,
             }       
         $.ajax({
             type: 'GET',
-            url: '/edit/',
+            url: '/info/',
             data:data,
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
@@ -158,6 +143,7 @@ var AJAXF = {
                 T.newDisc.find('.location').find('input[type="checkbox"]').attr('checked',fields['location']);
                 K.newDiscStatus = 'edit';
                 K.initDiscForm('Edit Discussion');
+                $('.delete').show();
             }
         });
     }
