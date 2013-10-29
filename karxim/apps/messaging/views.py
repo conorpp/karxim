@@ -199,7 +199,7 @@ def client(request):
                 continue
             b = BannedSession.objects.create(sessionid=sessionid)
             d.bannedsessions.add(b)
-            data = {'TYPE':'ban','pk':pk, 'sessionid':sessionid,'stack':'announce','announcement':'User %s has been removed' % (m.username), 'message':'You have been removed from dicussion %s' % d.title}
+            data = {'TYPE':'ban','pk':pk, 'sessionid':sessionid,'stack':'announce','announcement':'User %s has been removed' % (m.username), 'message':'You have been removed from discussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
     elif action == 'admin':
