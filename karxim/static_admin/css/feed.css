@@ -2,7 +2,6 @@
 #feedWrap{
     position: absolute;
     background: url('/static/images/feed_bg.png');
-    margin-left: 1.2%;
     width:25%; min-height: 100%; top:0px;
     min-width: 125px;
 }
