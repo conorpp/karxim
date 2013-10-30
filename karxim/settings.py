@@ -56,7 +56,8 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = os.path.join(SITE_ROOT, 'static_site') 
+MEDIA_ROOT = os.path.join(SITE_ROOT, 'static_site')
+MATHLATEX_IMAGES_DIR = 'math/'
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://example.com/media/", "http://media.example.com/"
@@ -139,6 +140,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'karxim.apps.messaging',
+    'karxim.apps.latex',
     'south'
 )
 

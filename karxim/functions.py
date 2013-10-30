@@ -8,8 +8,10 @@ from BeautifulSoup import BeautifulSoup
 
 from django.core.context_processors import csrf 
 from django.utils import timezone , simplejson
+from django.utils.html import escape
 from django.contrib import auth
 from karxim.settings import SECRET_KEY, REDIS_PORT
+from karxim.apps.latex.models import Formula
 
 KEY = hashlib.sha1(SECRET_KEY).digest()
 REDIS = redis.StrictRedis(host='127.0.0.1', port=REDIS_PORT, db=0)
@@ -67,22 +69,39 @@ def detectMobile(request):
             return True 
         return False
 
+class Format():
+    """
+        General functions for formating html and math.  Best to initialize
+        once and use methods as you need them.
+    """
+    def __init__(self, ):    
+        self.url_regex = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
+        self.latex_regex = re.compile(r'\{\{[\s\S.]*\}\}')
+        self.cleaner = Cleaner(style=False, links=True, page_structure=False)
+        
+    def cleanHtml(self, text, **kwargs):
+        """ cleans up html and auto links with target=_blank for forms """
+        add_target = kwargs.get('add_target',True)
+        text = self.cleaner.clean_html(autolink_html(text, [self.url_regex], avoid_hosts=[]))
+        if add_target:
+            text = BeautifulSoup(''.join(text))
+            for atag in text.findAll('a'):                          #open in new tab
+                atag['target'] = '_blank'
+                if atag['href'].find('http',0,5) == -1:
+                    atag['href'] = 'http://'+atag['href']
+            text = ''.join(map(str,text.contents))
+        return text.replace('\n', '<br />')
 
-URL_REGEX = re.compile(r"""(?i)\b(?P<body>(?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|(?P<host>[a-z0-9.\-]+[.][a-z]{2,4}/))(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""")
-cleaner = Cleaner(style=False, links=True, page_structure=False)
-def cleanHtml(text, add_target=True):
-    """ cleans up html and auto links with target=_blank for forms """
-    rawtext = cleaner.clean_html(autolink_html(text, [URL_REGEX], avoid_hosts=[]))
-    if add_target:
-        text = BeautifulSoup(''.join(rawtext))
-        for atag in text.findAll('a'):                          #open in new tab
-            pubLog('here\'s a link '+str(atag))
-            atag['target'] = '_blank'
-            if atag['href'].find('http',0,5) == -1:
-                atag['href'] = 'http://'+atag['href']
-        return ''.join(map(str,text.contents))
-    return rawtext
-
+    def latexify(self, content):
+        """  grabs occurances of {{ ..math.. }} and creates latix png from it.
+            then replaces each {{ ..math.. }}  occurance with an img tag"""
+        return self.latex_regex.sub(self.addFormula, content)
+    
+    def addFormula(self,match):
+        match = match.group()
+        latex = match[2:len(match)-2]
+        f = Formula.objects.create(formula = latex)
+        return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.url, escape(f.formula))
 
 
 

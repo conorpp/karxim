@@ -1,0 +1,35 @@
+{% load mathlatex %}
+<html>
+    <head>
+        <title>Testing Latex pics</title>
+    </head>
+<body>
+    <p>
+    Einstein said that {% math %}E = mc^2{% endmath %}.
+    </p>
+    
+    <p>
+    We can say more:
+    </p>
+    {% math %}
+                \left\{
+                \begin{array}{ll}
+                x = ct + x\cos(\omega t)\\
+                z = R\sin(\omega t)
+                \end{array}
+            \right. \Leftrightarrow
+            \left\{
+                \begin{array}{ll}
+                x = \frac{L}{T}t+R\cos(\omega t)\\
+                z = R\sin(\omega t)
+                \end{array}
+            \right. \Leftrightarrow
+            \left\{
+                \begin{array}{ll}
+                x = \frac{\omega t}{k}+R\cos(\omega t)\\
+                z = R\sin(\omega t)
+                \end{array}
+            \right.
+    {% endmath %}
+</body>
+</html>

@@ -61,8 +61,8 @@ def messages(request):
     pk = request.POST['pk']
     admin=False
     error=None
-    d = Discussion.objects.filter(removed=False).get(pk=pk)
-    
+    try:d = Discussion.objects.filter(removed=False).get(pk=pk)
+    except: return HttpResponse(status=404)
     try:
         sessionid = request.session['chatsession']
         if d.admins.filter(sessionid = sessionid).count():

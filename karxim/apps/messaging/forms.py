@@ -4,10 +4,10 @@ from dateutil import parser
 from django import forms
 from django.utils import timezone
 from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin, File
-from karxim.functions import cleanHtml, getDistance
+from karxim.functions import Format, getDistance
 from karxim.settings import TIME_ZONE
 from django.core import signing
-
+F = Format()
 class NewDiscussionForm(forms.ModelForm):
     title = forms.CharField(max_length = 120, required = False)
     password = forms.CharField(max_length = 120, required = False)
@@ -162,7 +162,7 @@ class NewMessageForm(forms.ModelForm):
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
-
+        
         if self.session is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
         elif self.discussion.bannedsessions.filter(sessionid=self.session).count():
@@ -198,7 +198,8 @@ class NewMessageForm(forms.ModelForm):
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
             except:
                 self.distance = None
-            self.text = cleanHtml(message)
+            self.text = F.cleanHtml(message, add_target=True)
+            self.text = F.latexify(self.text)
             if self.replyTo:
                 self.parent = self.discussion.message_set.get(pk=self.replyTo)
                 self.stem = self.parent.stem +1

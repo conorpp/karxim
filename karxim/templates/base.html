@@ -35,14 +35,19 @@
 <iframe id="uploadTarget" name="uploadTarget" src="" class="hide"></iframe>
 {{ TEMPLATES }}
 <script>
-  {% if markers %}
     $(document).ready(function(){
-      try{
-        var data = {{markers|safe}};
-        K.update( data );
-      }catch(e){}
+      {% if markers %}
+        try{
+          var data = {{markers|safe}};
+          K.update( data );
+        }catch(e){}
+      {% endif %}
+      {% if SESSIONID %}
+      try {
+        K.sessionid = {{SESSIONID}};
+      } catch(e) {}
+      {% endif %}
     });
-  {% endif %}
 </script>
 </body>
 </html>
