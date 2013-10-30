@@ -199,7 +199,7 @@ class NewMessageForm(forms.ModelForm):
             except:
                 self.distance = None
             self.text = F.cleanHtml(message, add_target=True)
-            self.text = F.latexify(self.text)
+            self.text = F.latexify(self.text).replace('\n', '<br />')
             if self.replyTo:
                 self.parent = self.discussion.message_set.get(pk=self.replyTo)
                 self.stem = self.parent.stem +1

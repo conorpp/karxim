@@ -8,7 +8,9 @@ body{
 a{
     color:#78b677;
 }
-
+img{
+    max-width:900px;
+}
 .abs{position: absolute;}
 .fixed{position: fixed;}
 .rel{position: relative;}

@@ -19,7 +19,7 @@ class MathLatexNode(template.Node):
 			context[self.varname] = f
 			return u''
 		else:
-			return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.url, escape(f.formula))
+			return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.name, escape(f.formula))
 
 
 @register.tag('math')

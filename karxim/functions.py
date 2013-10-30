@@ -90,7 +90,7 @@ class Format():
                 if atag['href'].find('http',0,5) == -1:
                     atag['href'] = 'http://'+atag['href']
             text = ''.join(map(str,text.contents))
-        return text.replace('\n', '<br />')
+        return text
 
     def latexify(self, content):
         """  grabs occurances of {{ ..math.. }} and creates latix png from it.
@@ -100,9 +100,12 @@ class Format():
     def addFormula(self,match):
         match = match.group()
         latex = match[2:len(match)-2]
-        f = Formula.objects.create(formula = latex)
-        return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.url, escape(f.formula))
-
+        try:
+            f = Formula.objects.create(formula = latex)
+            return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.name, escape(f.formula))
+        except Exception as e:
+            print 'Error creating formula : ', e
+            return u'<img src="_blank" alt="LATEX ERROR: %s" />' % e
 
 
 
