@@ -23,6 +23,7 @@ var S = {
                 K.popup('Limited Admin Status',
                 'We can only track your admin status for this discussion for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> The option to register and have permanent admin status will be available soon.');
             //}
+            K.loadDisc(data[0]['pk']);
         }else this._error(data['error']);
     },
     
