@@ -116,6 +116,7 @@ var AJAXF = {
     },
     
     info: function(pk){
+        K.loading();
         data  = {
             'pk': pk,
             }       
