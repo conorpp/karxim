@@ -109,7 +109,7 @@ def send(request):
     try:
         pk = request.POST['discussion']
         #print 'request.POST : ',request.POST
-        print 'request.FILES : ',request.FILES
+        #print 'request.FILES : ',request.FILES
         form = NewMessageForm(request.POST)
         chatsession = request.session.get('chatsession',None)
         form.setFields(replyTo = request.POST.get('replyTo',None),

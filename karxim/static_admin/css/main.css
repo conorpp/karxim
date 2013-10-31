@@ -185,6 +185,7 @@ canvas{
 #draw{
     height:420px;
     width: 650px;
+    top:10px;
 }
 #draw button{
     color:black;
