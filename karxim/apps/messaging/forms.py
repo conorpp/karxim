@@ -7,6 +7,7 @@ from karxim.apps.messaging.models import Discussion, Message, BannedSession, Adm
 from karxim.functions import Format, getDistance
 from karxim.settings import TIME_ZONE
 from django.core import signing
+from django.core.files import File as DjangoFile
 F = Format()
 class NewDiscussionForm(forms.ModelForm):
     title = forms.CharField(max_length = 120, required = False)
@@ -201,7 +202,7 @@ class NewMessageForm(forms.ModelForm):
                 imgdata = base64.b64decode(self.canvas)
             with open('canvas.png', 'wb') as f:
                 f.write(imgdata)
-            self.pics.append(file('canvas.png'))
+            self.pics.append(DjangoFile('canvas.png'))
             
         if self.error is None:
             try:

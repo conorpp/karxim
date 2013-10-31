@@ -259,7 +259,7 @@ M = {
             zoom: 13,
             zoomControl:false
         });
-        if(commit)L.mapbox.tileLayer('conorpp.map-90s20pgi').addTo(Map);
+        if(commit)L.mapbox.tileLayer('examples.map-y7l23tes').addTo(Map);
         Map.addControl(new L.Control.Zoom({ position: 'topright' }));
         Map.locate({setView: true, timeout:1500});
     },
