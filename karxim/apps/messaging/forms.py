@@ -1,4 +1,6 @@
-import base64
+import base64,uuid
+
+from tempfile import TemporaryFile
 from dateutil import parser
 
 from django import forms
@@ -194,16 +196,16 @@ class NewMessageForm(forms.ModelForm):
             self.pics, self.files,self.allFiles =None,None,None
             
         if self.canvas:
-            if self.pics is None: self.pics = []
             try:
-                imgdata = base64.b64decode(self.canvas)
-            except:
-                self.canvas += "=" * ((4 - len(self.canvas) % 4) % 4)
-                imgdata = base64.b64decode(self.canvas)
-            with open('canvas.png', 'wb') as f:
-                f.write(imgdata)
-            self.pics.append(DjangoFile('canvas.png'))
-            
+                if self.pics is None: self.pics = []
+                code = base64.b64decode(self.canvas.split(',')[1])
+                with open('image.png', 'w') as f:
+                    f.write(code)
+                img = DjangoFile(open('image.png'))
+                img.name = '%s.png' % uuid.uuid4()
+                self.pics.append(img)
+            except: self.canvas = None
+
         if self.error is None:
             try:
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
@@ -230,7 +232,10 @@ class NewMessageForm(forms.ModelForm):
         """ creates message and increments new message count in convo """
         self.message = Message.objects.create()
         self.newPk = self.message.pk        #need pk before returning
-                
+        if self.pics and self.canvas:       #canvas pics need to be created first.
+            print 'saving pics'
+            for pic in self.pics:
+                File.objects.create(image = pic, message = self.message)
         return self.message
 
     def commit(self):                       #for speed
@@ -249,7 +254,7 @@ class NewMessageForm(forms.ModelForm):
         self.message.updateActive()
         self.message.save()
         self.discussion.save()
-        if self.pics:
+        if self.pics and not self.canvas:
             print 'saving pics'
             for pic in self.pics:
                 File.objects.create(image = pic, message = self.message)
