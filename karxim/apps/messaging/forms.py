@@ -130,6 +130,7 @@ class NewDiscussionForm(forms.ModelForm):
     
  
 class NewMessageForm(forms.ModelForm):
+    text = forms.CharField(required=False)
     lat = forms.FloatField(required=False)
     lng = forms.FloatField(required=False)
     username = forms.CharField(max_length=50, required = False)
@@ -152,10 +153,8 @@ class NewMessageForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = None
-        print 'cleaned data',self.cleaned_data
-        message = self.cleaned_data['text']
-
-        if not message: self.error = 'You need to send a message'
+        #print 'cleaned data',self.cleaned_data
+        self.text = self.cleaned_data['text']
         
         if not self.session:
             self.error = 'Please allow cookies or refresh the page to continue.'
@@ -167,6 +166,9 @@ class NewMessageForm(forms.ModelForm):
         self.lng = self.cleaned_data.get('lng',None)
         self.canvas = self.cleaned_data.get('canvas',None)
         
+        if not self.text and not self.canvas and not self.rawFiles:
+            self.error = 'You need to send a message'
+            
         if self.session is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
         elif self.discussion.bannedsessions.filter(sessionid=self.session).count():
@@ -195,7 +197,7 @@ class NewMessageForm(forms.ModelForm):
         else:
             self.pics, self.files,self.allFiles =None,None,None
             
-        if self.canvas:
+        if self.canvas:     #canvas pics passed as DataURL so it must have special process.
             try:
                 if self.pics is None: self.pics = []
                 code = base64.b64decode(self.canvas.split(',')[1])
@@ -211,8 +213,9 @@ class NewMessageForm(forms.ModelForm):
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
             except:
                 self.distance = None
-            self.text = F.cleanHtml(message, add_target=True)
-            self.text = F.latexify(self.text).replace('\n', '<br />')
+            if self.text:
+                self.text = F.cleanHtml(self.text, add_target=True)
+                self.text = F.latexify(self.text).replace('\n', '<br />')
             if self.replyTo:
                 self.parent = self.discussion.message_set.get(pk=self.replyTo)
                 self.stem = self.parent.stem +1

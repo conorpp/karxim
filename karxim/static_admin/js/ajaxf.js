@@ -56,32 +56,29 @@ var AJAXF = {
         
     },
     
-    send: function(message, name, pk){
-        data  = {
-            'discussion': pk,
-            'pk': pk,
-            'username': name,
-            'text': message,
-            'replyTo': K.replyTo,
-            'canvas': K.imageURL,
-            'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-            }       
+    send: function(message){        //jquery object of message being replied to
+        message.data('discussion',K.discussion);
+        message.data('csrfmiddlewaretoken',$("input[name=csrfmiddlewaretoken]").val());
         try{
-            data.lat = K.userCoords.latitude;
-            data.lng = K.userCoords.longitude;
+            message.data('lat',K.userCoords.latitude);
+            message.data('lng',K.userCoords.longitude);
         }catch(e){}
-        if ((K.file && K.file == K.replyTo)) {        //set K.file to current reply to keep files in correct replies.
-            var fileForm = $('#messageFile');
+        var data = message.data();
+        console.log(data);
+        if (message.data('files')) {        //set K.file to current reply to keep files in correct replies.
+            var fileForm = $('#messageFileForm'+data.replyTo);
             for (var key in data){
-                var input = fileForm.find('input[name="'+key+'"]');
-                if (input) input.val(data[key]);
+                var input = $(document.createElement('input')).attr({
+                    type: 'hidden',
+                    name: key,
+                    value: data[key]
+                });
+                fileForm.append(input);
             }
-
             fileForm.submit();
-            //clear files from input file.  hackish
-            var fileInput = fileForm.find('#fileUpload').clone();
-            fileForm.find('#fileUpload').remove();
-            fileForm.append(fileInput);
+            console.log('form submitted');
+            fileForm.remove();
+            message.removeData();
             return;
         }
         $.ajax({
@@ -95,6 +92,7 @@ var AJAXF = {
                 }
             }
         });
+        message.removeData();
     },
     
     cAct:function(clients, action, pk){

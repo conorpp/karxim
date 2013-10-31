@@ -107,8 +107,9 @@ def messages(request):
 def send(request):
     """ recieving and processing messages from chats """
     try:
-        pk = request.POST['pk']
-        print 'request.POST : ',request.POST
+        pk = request.POST['discussion']
+        #print 'request.POST : ',request.POST
+        print 'request.FILES : ',request.FILES
         form = NewMessageForm(request.POST)
         chatsession = request.session.get('chatsession',None)
         form.setFields(replyTo = request.POST.get('replyTo',None),

@@ -22,19 +22,11 @@
 <body>
 
 {% block content %}{% endblock %}
-<form action="/send/" method="post" enctype="multipart/form-data" target="uploadTarget" class="hide" id="messageFile">
-  {% csrf_token %}
-  <input type="hidden" name="sessionid">
-  <input type="hidden" name="discussion">
-  <input type="hidden" name="pk">
-  <input type="hidden" name="username">
-  <input type="hidden" name="text">
-  <input type="hidden" name="replyTo">
-  <input type="hidden" name="canvas">
-  <input type="hidden" name="lat"><input type="hidden" name="lng">
-  <input type="file" id="fileUpload" name="files" multiple>
-  <input type="submit" >
-</form>
+
+
+{% csrf_token %}
+<input type="file" id="fileUpload" name="files" multiple>
+<div id="fileForms" class="hide" ></div>
 <iframe id="uploadTarget" name="uploadTarget" src="" class="hide"></iframe>
 {{ TEMPLATES }}
 <script>

@@ -3,7 +3,7 @@
 $(document).ready(function(){
 
     M.create(Settings.createMap);
-    K.locate();
+    K.locate();K.locate();
     K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
@@ -57,8 +57,8 @@ $(document).ready(function(){
         }
     });
     $('#newThread').click(function(){
-        $('#startThread').show('fast');
-        $('#startThread').find('textarea').focus();
+        $('#message0').find('.replyContainer').show('fast');
+        $('#message0').find('textarea').focus();
         $(this).hide();
     });
 
@@ -77,62 +77,90 @@ $(document).ready(function(){
     });
     
     $(document).on('click','.replyTo', function(){
-        var replyTo = this.id.replace('replyTo', '');
-        K.replyTo = replyTo;
+        var pk = K.getMessagePk(this);
         $(this).hide('fast');
-        var reply = $('#reply'+replyTo);
-        reply.show('fast');
-        reply.find('textarea').focus();
+        if(!$(this).siblings('.replyContainer').length)$(this).after(T.replyTemplate);
+        $('#message'+pk).find('.replyContainer').show('fast');
+        $('#message'+pk).find('textarea').focus();
     });
     $(document).on('click','.replyX', function(){
-        var pk = $(this).parent('.replyContainer')[0].id.replace('reply','');
-        $('#reply'+pk).hide('fast');
-        $('#replyTo'+pk).show('fast');
+        $(this).parents('.replyContainer').hide('fast');
+        $(this).parents('.replyContainer').siblings('.replyTo').show('fast');
         K.replyTo = null;
     });
-    var files = new Array();
+    
     $(document).on('click','.send', function(){
         console.log('clciked');
-        var pk = this.id.replace('send', '');
-        K.replyTo = pk;
-        var text = $.trim($(this).siblings('textarea').val());
-        if (text == '') return;
+        var pk = K.getMessagePk(this);
+        var message = $('#message'+pk);
+        message.data('replyTo', pk);
+        message.data('text', $.trim($(this).siblings('textarea').val()));
+        message.data('username', K.username);
+        if (message.data('text') == '' && !message.data('files') && !message.data('canvas')) return;
         if (!K.username) {
             K.popup('Please set a name','The field is in the lower right corner.',{millis:3500});
             $('#name').focus();
             return;
         }
-        if (files.length>5) {
-            K.popup('File limit', 'You can\'t upload more than five files at a time.',{millis:4000});
-            return;
+        if (message.data('files')) {
+            if (message.data('files').length > 5) {
+                K.popup('File limit', 'You can\'t upload more than five files at a time.',{millis:4000});
+                return;
+            }
         }
-        AJAXF.send(text, K.username, K.discussion)
+        AJAXF.send(message);
         if (pk == 0) {
             setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
             $('#startThread').hide('fast');
             $('#newThread').show();
             console.log('discussion 12', K.discussion);
         }else{
-            $('#reply'+pk).hide('fast');
-            $('#replyTo'+pk).show('fast');
-            $('#reply'+pk).find('textarea').val('');
-            K.replyTo = 0;
+            var pk = $(this).parents('.replyContainer').hide('fast');
+            $(this).parents('.replyContainer').siblings('.replyTo').show('fast');
+            K.replyTo = null;
         }
+        $('#message'+pk).find('.attachments').html('');
         $(this).siblings('textarea').val('')
     });
     
     $(document).on('click', '.attach', function(){
-        var replyTo = this.id.replace('attach','');
-        var button = this;
-        $('#fileUpload').trigger('click');
-        $('#fileUpload').change(function(){
-            files = $(this).prop("files");
-            if (K.imageURL) files.push('CanvasPic.png');        //canvas
+        var pk = K.getMessagePk(this);   //track reply these files are for.
+        K.replyTo = pk;
+        var message = $('#message'+pk);
+        if (!$('#messageFileForm'+pk).length) {
+            K.createFileForm(pk);
+        }
+        $('#fileUpload'+pk).trigger('click');
+        $('#fileUpload'+pk).change(function(){
+            var files = $(this).prop("files");
             var names = $.map(files, function(val) { return ' '+val.name; });
-            $(button).siblings('.attachments').html('Attached: '+names);
-            if ($(this).val()) K.file = replyTo;
-            else K.file = null;
+            if (message.data('canvas'))names.push(' CanvasPic.png')
+            $('#message'+pk).find('.attachments').html('Attached: '+names);
+            message.data('files',files.length);
+            console.log('file upload changed for pk'+pk+'.  heres the data', message.data());
         });
+    });
+    
+    $(document).on('click','.draw', function(){
+        K.replyTo = K.getMessagePk(this);
+        T.draw.toggle('fast');
+    });
+    $(document).on('click', '.uploadCanvas', function(){
+        var pk = K.replyTo;
+        var message = $('#message'+pk);
+        var imageUrl = $('canvas').get()[0].toDataURL("image/png");
+        message.data('canvas',imageUrl);
+        console.log(message.data());
+        files = $('#fileUpload'+pk).prop("files");
+        if(files) {        
+            var names = $.map(files, function(val) { return ' '+val.name; });
+            names.push(' CanvasPic.png');
+        }else names = 'CanvasPic.png'
+        $('#message'+pk).find('.attachments').html('Attached: '+names);
+        T.draw.hide('fast');
+    });
+    $(document).on('click', '.closeCanvas', function(){
+        T.draw.hide('fast');
     });
     
     $(document).on('click', 'img', function(){
@@ -168,7 +196,7 @@ $(document).ready(function(){
         K.newDiscStatus = 'delete';
         $('.dSubmit').trigger('click');
     });
-    
+
     /* drawing */
     var board = new DrawingBoard.Board('draw',{//pass it the element id
 	controls: [
@@ -182,12 +210,7 @@ $(document).ready(function(){
 	webStorage: 'session',
 	enlargeYourContainer: true
     });
-    $(document).on('click','.draw', function(){
-        if ($(this).siblings('#draw').length) $(this).siblings('#draw').remove();
-        else{
-            $(this).after(T.draw);
-        }
-    });
+
 });
 
 

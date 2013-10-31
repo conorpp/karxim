@@ -43,7 +43,7 @@ input[type="text"]{
 textarea{
     padding:4px;
     min-height: 80px;
-    max-width: 19em;
+    min-width: 19em;
 }
 img.thumbnail{
     max-height: 50px;

@@ -2,15 +2,7 @@
 
 {% block content %}
 <style>
-#Discussion{
-    width:100%;
-    height: 89%;
-}
-#Discussion #dFill{
-    overflow-y:scroll;
-    max-height:78%;
-    margin-bottom:4em;
-}
+
 #logo{font-size:3em;left:8px;}
 </style>
 <div id="popupSpace" class="hide abs fright background3 mar15 shadow level5 popupSpace"></div>
@@ -37,10 +29,16 @@
   <div class="clear"></div>
   <div id="sendWrap" class="background3">
     <div class="errors color0 hide"></div>
-    <div class="hide rel level2" id="startThread">
-      <textarea placeholder=" Start a new thread..." class=""></textarea>{% csrf_token %}
-      <button id="send0" class="abs send"> Send </button>
-      <button id="attach0" class="attach abs background4 top3"> Attach files or images </button>
+    <div id="message0">
+      <div class="hide background3 rel replyContainer">
+        <div class="replyX abs fright clicker">X</div>
+        <div class="attachments color0" ></div>
+        <textarea placeholder="Write a message . . ."  ></textarea>
+        <button class="send abs"> Send </button>
+        <button class="attach abs background4 top3"> Attach files or images </button>
+        <button  class="draw abs background4 top5"> Draw </button>
+        <div class="errors hide"></div>
+      </div>
     </div>
     <button id="newThread" >New topic</button>
     <div id="namePart" class="fright abs top0">

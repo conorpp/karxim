@@ -30,8 +30,9 @@ var K = {
     password:null,
     userCoords:null,
     username:'',
-    replyTo:null,
-    file:null,
+    
+    replyTo:null,       //these three are for making sure to send attached files to correct reply
+    
     discValues:{},
     newDiscStatus:'new',
     cAction:'',
@@ -229,7 +230,7 @@ var K = {
         $('#dFill').prepend(a.html());
     },
     
-    /*  get user location.  Independent of map. */
+    /*  get user location.  Independent of map. not working for some reason*/
     locate:function(){  
         if (navigator.geolocation) {
             var pos = function(e){
@@ -241,10 +242,26 @@ var K = {
             }
             navigator.geolocation.getCurrentPosition(pos, error);
         }
+        return navigator.geolocation;
+    },
+    getMessagePk: function(element){
+        if ($(element).parents('.message').length) {
+            return $(element).parents('.message')[0].id.replace('message', '');
+        }else return 0;
     },
     
-    addTime:function(){
-        //K.popup('Start and End time','wee');
+    createFileForm: function(pk){
+        var newForm = $(document.createElement('form'));
+        newForm.attr({
+            id:'messageFileForm'+pk,
+            action:'/send/',
+            method: 'post',
+            enctype: 'multipart/form-data',
+            target: 'uploadTarget'
+        });
+        var newFileUpload = $('#fileUpload').clone();
+        newFileUpload.attr('id', 'fileUpload'+pk);
+        $('#fileForms').append(newForm.append(newFileUpload));
     }
 
 };
@@ -348,7 +365,11 @@ $(document).ready(function(){
         
         deletePrompt: $('#deletePrompt'),
         
-        draw: $('#draw')
+        draw: $('#draw'),
+        
+        canvasButtons: $('#canvasButtons').html(),
+        
+        replyTemplate: $('#message0').html()
                 
     }
 });

@@ -86,7 +86,25 @@
   </div>
 </div>
 
-{#      Canvas      #}
-<div id="draw" class="fixed level2"></div>
+<div id="replyTemplate" >
+  <div class="hide background3 rel replyContainer">
+    <div class="replyX abs fright clicker">X</div>
+    <textarea placeholder="Write a response . . ."  ></textarea>
+    <button class="send abs"> Reply </button>
+    <button class="attach abs background4 top3"> Attach files or images </button>
+    <button  class="draw abs background4 top5"> Draw </button>
+    <div class="attachments" ></div>
+    <div class="errors hide"></div>
+  </div>
+</div>
+
+{#      Extra buttons for canvas control      #}
+<div id="canvasButtons">
+  <button class="background1 uploadCanvas"> Upload </button>
+  <button class="left4 background1 closeCanvas"  style="margin-left:4em"> Close </button>
+</div>
 
 </div>{# end hide #}
+
+{#      Canvas      #}
+<div id="draw" class="fixed level2 hide"></div>
