@@ -63,18 +63,20 @@ var AJAXF = {
             'username': name,
             'text': message,
             'replyTo': K.replyTo,
+            'canvas': K.imageURL,
             'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
             }       
         try{
             data.lat = K.userCoords.latitude;
             data.lng = K.userCoords.longitude;
         }catch(e){}
-        if (K.file && K.file == K.replyTo) {
+        if ((K.file && K.file == K.replyTo)) {        //set K.file to current reply to keep files in correct replies.
             var fileForm = $('#messageFile');
             for (var key in data){
                 var input = fileForm.find('input[name="'+key+'"]');
                 if (input) input.val(data[key]);
             }
+
             fileForm.submit();
             //clear files from input file.  hackish
             var fileInput = fileForm.find('#fileUpload').clone();
@@ -154,4 +156,23 @@ var AJAXF = {
             }
         });
     }
+}
+function dataURItoBlob(dataURI) {
+    // convert base64 to raw binary data held in a string
+    // doesn't handle URLEncoded DataURIs
+    var byteString = atob(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    // write the ArrayBuffer to a blob, and you're done
+    var bb = new Blob([ab]);
+    return bb;
 }

@@ -1,4 +1,4 @@
-
+import base64
 from dateutil import parser
 
 from django import forms
@@ -130,10 +130,10 @@ class NewMessageForm(forms.ModelForm):
     lat = forms.FloatField(required=False)
     lng = forms.FloatField(required=False)
     username = forms.CharField(max_length=50, required = False)
-    
+    canvas = forms.CharField(required=False)
     class Meta:
         model = Message
-        fields = ('discussion','text','username','lat', 'lng')
+        fields = ('discussion','text','username','lat', 'lng','canvas')
     
     def setFields(self,**kwargs):
         try:self.replyTo = int(kwargs.get('replyTo', 0))
@@ -162,6 +162,7 @@ class NewMessageForm(forms.ModelForm):
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
+        self.canvas = self.cleaned_data.get('canvas',None)
         
         if self.session is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
@@ -181,7 +182,6 @@ class NewMessageForm(forms.ModelForm):
             self.files = []
             if len(self.rawFiles) <6:
                 for f in self.rawFiles:
-
                     try:
                         ext = f.name.rsplit('.',1)[1]
                         if ext.lower() in ['jpg', 'jpeg', 'gif', 'png']:
@@ -190,9 +190,19 @@ class NewMessageForm(forms.ModelForm):
                     except: self.files.append(f)
             else: self.error = 'You can only upload up to 5 files at a time.'
         else:
-
             self.pics, self.files,self.allFiles =None,None,None
-
+            
+        if self.canvas:
+            if self.pics is None: self.pics = []
+            try:
+                imgdata = base64.b64decode(self.canvas)
+            except:
+                self.canvas += "=" * ((4 - len(self.canvas) % 4) % 4)
+                imgdata = base64.b64decode(self.canvas)
+            with open('canvas.png', 'wb') as f:
+                f.write(imgdata)
+            self.pics.append(file('canvas.png'))
+            
         if self.error is None:
             try:
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)

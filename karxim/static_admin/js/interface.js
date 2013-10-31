@@ -38,6 +38,7 @@ var K = {
     timeout:null,
     prepend:false,
     newDisc:null,
+    imageURL:null,
     
     loading:function(){try{$('#topLoad').html(T.loadIcon);}catch(e){}},
     loaded:function(){try{$('#topLoad').html('');}catch(e){}},
@@ -345,7 +346,9 @@ $(document).ready(function(){
         
         newDisc: $('#newDisc'),
         
-        deletePrompt: $('#deletePrompt')
+        deletePrompt: $('#deletePrompt'),
+        
+        draw: $('#draw')
                 
     }
 });

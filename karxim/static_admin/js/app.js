@@ -127,6 +127,7 @@ $(document).ready(function(){
         $('#fileUpload').trigger('click');
         $('#fileUpload').change(function(){
             files = $(this).prop("files");
+            if (K.imageURL) files.push('CanvasPic.png');        //canvas
             var names = $.map(files, function(val) { return ' '+val.name; });
             $(button).siblings('.attachments').html('Attached: '+names);
             if ($(this).val()) K.file = replyTo;
@@ -168,6 +169,25 @@ $(document).ready(function(){
         $('.dSubmit').trigger('click');
     });
     
+    /* drawing */
+    var board = new DrawingBoard.Board('draw',{//pass it the element id
+	controls: [
+		'Color',
+		{ Size: { type: 'dropdown' } },
+		{ DrawingMode: { filler: false } },
+		'Navigation',
+		'Download'
+	],
+	size: 2,
+	webStorage: 'session',
+	enlargeYourContainer: true
+    });
+    $(document).on('click','.draw', function(){
+        if ($(this).siblings('#draw').length) $(this).siblings('#draw').remove();
+        else{
+            $(this).after(T.draw);
+        }
+    });
 });
 
 
