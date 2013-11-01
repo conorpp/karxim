@@ -132,7 +132,8 @@ def send(request):
             'stem':form.stem,
             'distance': form.distance,
             'age':timezone.now().strftime('%I:%M %p'),
-            'file_set2':{'images':form.pics, 'files':form.files}
+            'file_set':{'all': form.files},
+            'image_set':{'all': form.pics}
             }
                 
         data['html'] = render_to_string('parts/message.html',{

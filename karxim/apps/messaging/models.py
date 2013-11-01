@@ -128,14 +128,24 @@ class Message(models.Model):
             print 'all done traversing parents'
 
 class File(models.Model):
-    message = models.ForeignKey(Message,blank=True, null=True)
+    message = models.ForeignKey(Message,blank=True, null=True, related_name='file_set')
     discussion = models.ForeignKey(Discussion,blank=True, null=True)
-    image = models.ImageField(upload_to='images',blank=True, null=True)
     item = models.FileField(upload_to='images/files',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
     description = models.CharField(max_length=2000, default='')
     created = models.DateTimeField(auto_now_add=True, db_index=True)
-    def filename(self):
+    def __unicode__(self):
         return os.path.basename(self.item.name)
+    
+class Image(models.Model):
+    message = models.ForeignKey(Message,blank=True, null=True, related_name='image_set')
+    discussion = models.ForeignKey(Discussion,blank=True, null=True)
+    image = models.ImageField(upload_to='images',blank=True, null=True)
+    caption = models.CharField(max_length=250, default='')
+    description = models.CharField(max_length=2000, default='')
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    def __unicode__(self):
+        return os.path.basename(self.image.name)
+    
     
     

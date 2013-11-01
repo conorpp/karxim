@@ -5,7 +5,7 @@ from dateutil import parser
 
 from django import forms
 from django.utils import timezone
-from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin, File
+from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin, File, Image
 from karxim.functions import Format, getDistance
 from karxim.settings import TIME_ZONE
 from django.core import signing
@@ -238,7 +238,7 @@ class NewMessageForm(forms.ModelForm):
         if self.pics and self.canvas:       #canvas pics need to be created first.
             print 'saving pics'
             for pic in self.pics:
-                File.objects.create(image = pic, message = self.message)
+                Image.objects.create(image = pic, message = self.message)
         return self.message
 
     def commit(self):                       #for speed
@@ -260,7 +260,7 @@ class NewMessageForm(forms.ModelForm):
         if self.pics and not self.canvas:
             print 'saving pics'
             for pic in self.pics:
-                File.objects.create(image = pic, message = self.message)
+                Image.objects.create(image = pic, message = self.message)
         if self.files:
             for f in self.files:
                 File.objects.create(item = f, message = self.message)
