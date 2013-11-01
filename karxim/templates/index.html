@@ -11,11 +11,13 @@
 
 {% endblock %}
 {% block fHead %}
-<script src="{% static 'js/jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
   <link href="{% static 'css/feed.css' %}" rel="stylesheet" />
 {% endblock %}
-
 {% block content %}
+
+<div id="asyncScripts" class="hide">
+  <input type="hide" value="{% static 'js/jquery/jquery-ui-1.10.3.custom.min.js' %}">
+</div>
   
 <div id="menu" class="fright color1">
     <div class="mItem background2 clicker" id="start">

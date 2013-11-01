@@ -250,6 +250,7 @@ var K = {
         }else return 0;
     },
     
+    /* dynamically creates new html form for async file uploads. */
     createFileForm: function(pk){
         var newForm = $(document.createElement('form'));
         newForm.attr({
@@ -262,6 +263,39 @@ var K = {
         var newFileUpload = $('#fileUpload').clone();
         newFileUpload.attr('id', 'fileUpload'+pk);
         $('#fileForms').append(newForm.append(newFileUpload));
+    },
+    
+    /* async load js/css for improved performance */
+    loadScripts: function(){
+        //universal scripts e.g. from base.html
+        $.getScript( "/static/js/jquery/drawingboard.min.js", function( data, textStatus, jqxhr ) {
+          console.log( textStatus ); 
+          console.log( "Load was performed." );
+        });
+        //template/page specific scripts.
+        var urls = $('#asyncScripts').find('input[type="hidden"]');
+
+        urls.each(function(){
+            $.getScript( $(this).val(), function( data, textStatus, jqxhr ) {
+              console.log( textStatus ); 
+              console.log( "Load was performed." );
+            });
+        });
+    },
+    /* drawing canvas and UI */
+    createBoard: function(){
+        var board = new DrawingBoard.Board('draw',{//pass it the element id
+            controls: [
+                    'Color',
+                    { Size: { type: 'dropdown' } },
+                    { DrawingMode: { filler: false } },
+                    'Navigation',
+                    'Download'
+            ],
+            size: 2,
+            webStorage: 'session',
+            enlargeYourContainer: true
+        });
     }
 
 };

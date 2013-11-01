@@ -4,6 +4,7 @@ $(document).ready(function(){
 
     M.create(Settings.createMap);
     K.locate();K.locate();
+    K.loadScripts();
     K.username = Cookie.get('username');
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
@@ -142,6 +143,7 @@ $(document).ready(function(){
     });
     
     $(document).on('click','.draw', function(){
+        if (!$('.drawing-board-controls').length) K.createBoard();
         K.replyTo = K.getMessagePk(this);
         T.draw.toggle('fast');
     });
@@ -197,19 +199,6 @@ $(document).ready(function(){
         $('.dSubmit').trigger('click');
     });
 
-    /* drawing */
-    var board = new DrawingBoard.Board('draw',{//pass it the element id
-	controls: [
-		'Color',
-		{ Size: { type: 'dropdown' } },
-		{ DrawingMode: { filler: false } },
-		'Navigation',
-		'Download'
-	],
-	size: 2,
-	webStorage: 'session',
-	enlargeYourContainer: true
-    });
 
 });
 
