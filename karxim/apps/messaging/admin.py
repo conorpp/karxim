@@ -5,21 +5,24 @@ from karxim.apps.messaging.models import Discussion, Message, BannedSession, Adm
 
 class EventPictureInline(admin.TabularInline):
     model = File
+class ReplyInline(admin.TabularInline):
+    model = Message
+    name = 'Replies'
+    class Meta():
+        verbose_name = 'Replies'
     
-class FileAdmin(admin.ModelAdmin):
-    inlines=[EventPictureInline]
-    search_fields = ['title']
-    ordering = ['-created']
-    
-#reference
-"""
-class GalleryAdmin(admin.ModelAdmin):
-    inlines = [ ImageInline, ]
-    list_filter = ('explicit',)
-    search_fields = ['subject','description']
-"""
+class MessageAdmin(admin.ModelAdmin):
+    inlines=[EventPictureInline, ReplyInline]
+    search_fields = ['username','text']
+    ordering = ['-lastActive']
 
-admin.site.register(Discussion,FileAdmin)
-admin.site.register(Message,FileAdmin)
+class DiscussionAdmin(admin.ModelAdmin):
+    inlines=[EventPictureInline, ReplyInline]
+    list_filter = ('explicit','removed','private','location')
+    search_fields = ['username','text']
+    ordering = ['-lastActive']
+
+admin.site.register(Discussion,DiscussionAdmin)
+admin.site.register(Message,MessageAdmin)
 admin.site.register(BannedSession)
 admin.site.register(Admin)
