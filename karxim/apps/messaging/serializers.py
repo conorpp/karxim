@@ -52,10 +52,13 @@ class MessageSerializer():
         self.order_by = kwargs.get('order_by','-lastActive')
         self.nests = 20
         self.html = kwargs.get('html', True)
-        self.fields =()
-        self.methods=(
+        self.json = kwargs.get('json', True)
+        self.fields = kwargs.get('fields', (
             
-            )
+            ))
+        self.methods= kwargs.get('methods',(
+            
+            ))
         
     def data(self, **kwargs):
         try:
@@ -63,9 +66,8 @@ class MessageSerializer():
         except Exception as e:
             messages = [self.assignFields(self.messages)]                  #object
         
-        json = kwargs.get('json', True)
         data = {'messages':messages,'admin':kwargs.get('admin','false')}
-        if json:
+        if self.json:
             return simplejson.dumps(data)
         else: return data
     

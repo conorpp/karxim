@@ -299,9 +299,17 @@ var K = {
     findCreated: function(){
         console.log('starting search for ', '.owner'+this.userId);
         $('#dFill').children('.owner'+this.userId).each(function(){
-            $(this).prepend('<h1>You own this message.</h1>');
-            $(this).removeClass('owner'+this.userId);
+            $(this).prepend('<p class="edit rel level3 fright clicker color1 mar5">Edit</p>');
+            //$(this).removeClass(' owner'+this.userId);
+            //console.log($(this));
         });
+        $('.owner'+this.userId).removeClass('owner'+this.userId);
+    },
+    
+    editMessage: function(data){
+        data = data['messages'][0];
+        var message = $('#message'+data.pk);
+        console.log('got to edit. heres message ', message);
     }
 
 };

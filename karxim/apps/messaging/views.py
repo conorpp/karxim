@@ -1,13 +1,13 @@
 import redis
 
 from django.core import serializers
-from django.shortcuts import render, HttpResponse, HttpResponseRedirect, render_to_response
+from django.shortcuts import render, HttpResponse, HttpResponseRedirect, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson, timezone
 
-from karxim.apps.messaging.models import Discussion, BannedSession, Admin
+from karxim.apps.messaging.models import Discussion, BannedSession, Admin, Message
 from karxim.apps.messaging.forms import NewDiscussionForm , NewMessageForm
 from karxim.apps.messaging.serializers import DiscussionSerializer, MessageSerializer
 from karxim.functions import pubLog, REDIS
@@ -225,19 +225,29 @@ def client(request):
     return HttpResponse(done)
     
     
-def info(request):
+def dInfo(request):
     """ returns info in json about one discussion.  for editing. """
     pk = request.GET.get('pk')
-    try:
-        d = Discussion.objects.filter(pk=pk)
-    except:
-        return HttpResponse(status=404)
+    d = get_object_or_404(Discussion, pk=pk)
     fields = (
         'startDate', 'endDate', 'private', 'password', 'title', 'location'
     )
     data = serializers.serialize('json', d, fields=fields)
     return HttpResponse(data)
-    
+
+def mInfo(request):
+    """ returns info in json about one message.  for editing """
+    pk = request.GET.get('pk')
+    #m = get_object_or_404(Message, pk=pk)
+    m = Message.objects.get(pk=pk)
+    fields = (
+        'text','pk'
+    )
+    methods = (
+        ('images','imageDict'),('files','fileDict')
+    )
+    data = MessageSerializer(m, fields=fields,methods=methods, html=False, json=True).data()
+    return HttpResponse(data)
 
     
     

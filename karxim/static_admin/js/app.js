@@ -199,6 +199,10 @@ $(document).ready(function(){
         K.newDiscStatus = 'delete';
         $('.dSubmit').trigger('click');
     });
+    $(document).on('click', '.edit', function(){
+        var pk = K.getMessagePk(this);
+        AJAXF.editMessage(pk);
+    });
 
 
 });

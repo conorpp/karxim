@@ -122,7 +122,7 @@ var AJAXF = {
             }       
         $.ajax({
             type: 'GET',
-            url: '/info/',
+            url: '/discussion/info/',
             data:data,
             dataType:'json',
             success: function(data, textStatus,jqXHR) {
@@ -151,6 +151,24 @@ var AJAXF = {
                 K.newDiscStatus = 'edit';
                 K.initDiscForm('Edit Discussion');
                 $('.delete').show();
+            }
+        });
+    },
+    
+    editMessage: function(pk){
+        K.loading();
+        data  = {
+            'pk': pk,
+            }       
+        $.ajax({
+            type: 'GET',
+            url: '/message/info/',
+            data:data,
+            dataType:'json',
+            success: function(data, textStatus,jqXHR) {
+                K.loaded();
+                console.log('got mInfo back ', data);
+                K.editMessage(data);
             }
         });
     }

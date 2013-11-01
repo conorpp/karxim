@@ -126,6 +126,20 @@ class Message(models.Model):
                     break
         except Exception as e:
             print 'all done traversing parents'
+            
+    def imageDict(self):
+        images = self.image_set.all()
+        dic = {}
+        for i in images:
+            dic['image']=i.__unicode__()
+        return dic
+            
+    def fileDict(self):
+        files = self.file_set.all()
+        dic = {}
+        for f in files:
+            dic['file']=f.__unicode__()
+        return dic
 
 class File(models.Model):
     message = models.ForeignKey(Message,blank=True, null=True, related_name='file_set')
