@@ -2,7 +2,6 @@
 from django.template.loader import render_to_string
 
 from karxim.functions import REDIS, pubLog, set_cookie
-from karxim.settings import SOCKET_URL
 
 
 class ChatMiddleware():
@@ -47,6 +46,5 @@ class ChatMiddleware():
 #global template variables
 def base(request):
     return {
-        'SOCKET_URL': SOCKET_URL,
         'TEMPLATES':render_to_string('includeTemplates.html')
     }

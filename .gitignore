@@ -2,6 +2,7 @@
 #directories
 static_site/
 migrations/
+deployment/
 # C extensions
 *.so
 
@@ -37,5 +38,5 @@ nosetests.xml
 .project
 .pydevproject
 
-#directories
-deployment/
+#misc
+image.png
