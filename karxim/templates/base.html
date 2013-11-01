@@ -23,6 +23,7 @@
 
 
 {% csrf_token %}
+<input type="hidden" id="userId" value="{{ SESSIONID }}">
 <input class="hide" type="file" id="fileUpload" name="files" multiple>
 <div id="fileForms" class="hide" ></div>
 <iframe id="uploadTarget" name="uploadTarget" src="" class="hide"></iframe>

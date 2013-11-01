@@ -40,6 +40,7 @@ var K = {
     prepend:false,
     newDisc:null,
     imageURL:null,
+    userId:null,
     
     loading:function(){try{$('#topLoad').html(T.loadIcon);}catch(e){}},
     loaded:function(){try{$('#topLoad').html('');}catch(e){}},
@@ -58,7 +59,7 @@ var K = {
         $('#dFeed'+id).addClass('background3');
     },
 
-    /* for updating with all discussion markers */
+    /* for updating with all discussion markers/feed posts. */
     update:function(data, options){
         if (options == undefined) options = {};
         if (options.prepend) {
@@ -77,8 +78,6 @@ var K = {
     /* loads up a discussion for a given pk.  password optional. */
     loadDisc: function(pk, password){
         this.discussion = pk;
-        console.log('new d is pk ',pk);
-        console.log('new d is pk 2',this.discussion);
         if (password) this.password = password;
         AJAXF.getMessages(pk);
         var title = $('#discussion'+pk).find('h2').html();
@@ -89,7 +88,7 @@ var K = {
         $('#titleLink').attr('href', Settings.host+'/d/'+pk);
         $('#sendWrap').find('textarea').attr('disabled', false);
     },
-    
+    /* initialized the new discussion form */
     initDiscForm: function(title){
         if (title == undefined) title = 'New Discussion';
         try{$('.pDay').datepicker('destroy');}catch(e){}
@@ -273,8 +272,7 @@ var K = {
           console.log( "Load was performed." );
         });
         //template/page specific scripts.
-        var urls = $('#asyncScripts').find('input[type="hidden"]');
-
+        var urls = $('#asyncScripts').children('input');
         urls.each(function(){
             $.getScript( $(this).val(), function( data, textStatus, jqxhr ) {
               console.log( textStatus ); 
@@ -295,6 +293,14 @@ var K = {
             size: 2,
             webStorage: 'session',
             enlargeYourContainer: true
+        });
+    },
+    /* finds messages owned by client to give edit UI */
+    findCreated: function(){
+        console.log('starting search for ', '.owner'+this.userId);
+        $('#dFill').children('.owner'+this.userId).each(function(){
+            $(this).prepend('<h1>You own this message.</h1>');
+            $(this).removeClass('owner'+this.userId);
         });
     }
 

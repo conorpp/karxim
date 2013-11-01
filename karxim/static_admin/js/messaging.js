@@ -93,7 +93,8 @@ Message.socket.on('getMessage', function(data) {
     var select = $('#message'+pk);
     select.find('.time').html(Message.time());
     select.hide();
-    select.show(100);        
+    select.show(100);
+    K.findCreated();
 });
 
 Message.socket.on('update', function(data) {

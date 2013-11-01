@@ -142,7 +142,7 @@ class NewMessageForm(forms.ModelForm):
     def setFields(self,**kwargs):
         try:self.replyTo = int(kwargs.get('replyTo', 0))
         except: self.replyTo = 0
-        self.session = kwargs.get('chatsession',None)
+        self.sessionid = kwargs.get('chatsession',None)
         
     def setFiles(self, files):
         print 'GOT FILES', files
@@ -156,7 +156,7 @@ class NewMessageForm(forms.ModelForm):
         #print 'cleaned data',self.cleaned_data
         self.text = self.cleaned_data['text']
         
-        if not self.session:
+        if not self.sessionid:
             self.error = 'Please allow cookies or refresh the page to continue.'
             
         self.name = self.cleaned_data.get('username', 'hacker')[:40]
@@ -169,14 +169,14 @@ class NewMessageForm(forms.ModelForm):
         if not self.text and not self.canvas and not self.rawFiles:
             self.error = 'You need to send a message'
             
-        if self.session is None:
+        if self.sessionid is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
-        elif self.discussion.bannedsessions.filter(sessionid=self.session).count():
+        elif self.discussion.bannedsessions.filter(sessionid=self.sessionid).count():
             self.error = 'You have been banned from this discussion'
         else:
             try:
                 c = Message.objects.filter(
-                    sessionid = self.session,
+                    sessionid = self.sessionid,
                     created__gte = timezone.now() - timezone.timedelta(seconds=10)
                 ).count()
                 if c>2:
@@ -252,7 +252,7 @@ class NewMessageForm(forms.ModelForm):
         self.message.text = self.text
         self.message.stem = self.stem
         self.message.parent = self.parent
-        self.message.sessionid = self.session
+        self.message.sessionid = self.sessionid
         if self.distance: self.message.distance = self.distance
         self.message.updateActive()
         self.message.save()

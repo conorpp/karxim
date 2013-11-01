@@ -128,6 +128,7 @@ def send(request):
         m ={
             'pk':form.newPk,
             'username':form.name,
+            'sessionid':form.sessionid,
             'text':form.text,
             'stem':form.stem,
             'distance': form.distance,

@@ -10,6 +10,7 @@ $(document).ready(function(){
         $('input#name').attr('placeholder', K.username);
         $('#yourName').html('Your name is '+K.username);
     }
+    K.userId = $('#userId').val();
     
     $('#start').on('click', function(){
         K.newDiscStatus = 'new';

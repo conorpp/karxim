@@ -50,7 +50,7 @@ var AJAXF = {
                 for (var i = 0; i < messages.length; i++) {
                     fill.append(messages[i]['html']);
                 }
-
+                K.findCreated();
             }
         });
         
