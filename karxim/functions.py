@@ -89,7 +89,7 @@ class Format():
                 atag['target'] = '_blank'
                 if atag['href'].find('http',0,5) == -1:
                     atag['href'] = 'http://'+atag['href']
-            text = ''.join(map(str,text.contents))
+            text = ''.join(map(str,text.contents[0].text))
         return text
 
     def latexify(self, content):
