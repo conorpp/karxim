@@ -109,8 +109,8 @@ def send(request):
     """ recieving and processing messages from chats """
     try:
         pk = request.POST['discussion']
-        print 'request.POST : ',request.POST
-        print 'request.FILES : ',request.FILES
+        #print 'request.POST : ',request.POST
+        #print 'request.FILES : ',request.FILES
         form = NewMessageForm(request.POST)
         chatsession = request.session.get('chatsession',None)
         form.setFields(replyTo = request.POST.get('replyTo',None),
@@ -124,8 +124,8 @@ def send(request):
     
         data = {'TYPE':'message',
                 'replyTo':form.replyTo,
-                'pk':form.newPk,
-                'discussion':form.discussion.pk,
+                'pk':form.newPk,                     #message pk
+                'discussion':form.discussion.pk,    #discssion pk
                 'stack':form.status
             }
         m ={
@@ -186,7 +186,7 @@ def client(request):
     messages = simplejson.loads(request.POST['clients'])
     action = request.POST['action']
     data = None
-    print 'GOT CLIENT CHANGE REQUEST ', request.POST
+    #print 'GOT CLIENT CHANGE REQUEST ', request.POST
 
     d = Discussion.objects.get(pk=pk)
     try:
@@ -221,6 +221,12 @@ def client(request):
             data = {'TYPE':'admin', 'sessionid':sessionid,'stack':'announce','announcement':'User %s has been made an Admin' % (m.username), 'message':'You have been made an admin for discussion %s' % d.title}
             REDIS.publish(pk, simplejson.dumps(data))
             d.save()
+    elif action == 'delete':
+        for m in messages:
+            m.saveDelete(text=True, files=True)
+            html = render_to_string('parts/message.html',{'m':m})
+            data = {'TYPE':'message','pk':m.pk,'discussion':pk,'stack':'edit','html':html}
+            REDIS.publish(pk, simplejson.dumps(data))
             
     
     done = simplejson.dumps({'status':'sent'})

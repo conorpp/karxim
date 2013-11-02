@@ -260,15 +260,18 @@ class NewMessageForm(forms.ModelForm):
                 self.handleFiles()
             except ArithmeticError: 
                 raise Http404('Could\'t find the message to edit.')
+            
         if self.pics:
             for pic in self.pics:
                 i = Image.objects.create(image = pic, message = self.message, name=pic)
                 i.name = i.__unicode__()
+                pic.name = i.name
                 i.save()
         if self.files:
             for f in self.files:
                 i = File.objects.create(item = f, message = self.message, name = f)
                 i.name = i.__unicode__()
+                f.name = i.name
                 i.save()
 
             
@@ -300,18 +303,7 @@ class NewMessageForm(forms.ModelForm):
         deletedFiles = self.cleaned_data.get('deletedFiles',None)
         if deletedFiles is not None:
             deletedFiles = simplejson.loads(deletedFiles)
-            print deletedFiles
-            for d in deletedFiles:
-                try:
-                    i = self.message.image_set.get(name = d)
-                    Image.objects.create(oldMessage=i.message, deleted=i.image)
-                    i.delete()
-                except ArithmeticError:
-                    try:
-                        f= self.message.image_set.get(name = d)
-                        File.objects.create(oldMessage=f.message, deleted=f.item)
-                        f.delete()
-                    except:pass
+            self.message.saveDelete(message=False, files=True, names=deletedFiles)
         for i in self.message.image_set.all():
             self.picsEdited.append(i)
         for i in self.message.file_set.all():

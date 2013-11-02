@@ -187,6 +187,12 @@ $(document).ready(function(){
         $('.adminAction').html('Removing a client . . .');
         K.cSelect();
     });
+    $(document).on('click','.deleteM',function(){
+        K.cAction = 'delete';
+        console.log('clicked...');
+        $('.adminAction').html('Deleting messages . . .');
+        K.cSelect();
+    });
     $(document).on('click','.editAdmin',function(){
         AJAXF.info(K.discussion);
     });
@@ -197,6 +203,7 @@ $(document).ready(function(){
         K.cAction=null;
         K.cAct();
     });
+    /*     Deleting a conversation for admin.     */
     $(document).on('click','.delete',function(){
         K.popup('Delete',T.deletePrompt);
     });
@@ -204,13 +211,13 @@ $(document).ready(function(){
         K.newDiscStatus = 'delete';
         $('.dSubmit').trigger('click');
     });
+    /*   Editing client message   */
     $(document).on('click', '.edit', function(){
         K.performEdit(false);
         var pk = K.getMessagePk(this);
         K.editMessage(pk);
-       // AJAXF.editMessage(pk);    //unnecessary for now.
     });
-    $(document).on('click', '.cancelEdit', function(){
+    $(document).on('click', '.cancelEdit', function(){      
         K.performEdit(false);
     });
     $(document).on('click', '.saveEdit', function(){

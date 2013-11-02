@@ -158,7 +158,7 @@ var AJAXF = {
         });
     },
     
-    editMessage: function(pk){
+    /*editMessage: function(pk){    //unnecessary.
         K.loading();
         data  = {
             'pk': pk,
@@ -174,7 +174,7 @@ var AJAXF = {
                 K.editMessage(data);
             }
         });
-    }
+    }*/
 }
 function dataURItoBlob(dataURI) {
     // convert base64 to raw binary data held in a string

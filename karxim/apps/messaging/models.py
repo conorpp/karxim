@@ -100,6 +100,11 @@ class Message(models.Model):
     lastActive = models.DateTimeField(auto_now_add=True, default=timezone.now(), db_index=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     
+    #deleted info saved.
+    deletedText = models.CharField(max_length=1000, default='[Removed]')
+    deletedUsername = models.CharField(max_length=50, default = 'None')
+    deletedDistance = models.FloatField(default = 0)
+    
     #following not implemented
     image = models.ImageField(upload_to='images',blank=True, null=True)
     item = models.FileField(upload_to='images/files',blank=True, null=True)
@@ -128,6 +133,7 @@ class Message(models.Model):
             print 'all done traversing parents'
             
     def imageDict(self):
+        """For returning all images as serializable dict"""
         images = self.image_set.all()
         dic = {}
         for i in images:
@@ -135,12 +141,47 @@ class Message(models.Model):
         return dic
             
     def fileDict(self):
+        """
+        For returning all files as serializable dict
+        """
         files = self.file_set.all()
         dic = {}
         for f in files:
             dic['file']=f.__unicode__()
         return dic
-
+    
+    def saveDelete(self, **kwargs):
+        """
+        For removing data from fields but saving it in
+        hidden fields
+        """
+        message = kwargs.get('message',True)
+        placeholder = kwargs.get('placeholder','[Removed]')
+        files = kwargs.get('files',True)
+        names = kwargs.get('names',None)
+        if message:
+            self.deletedText = self.text
+            self.deletedUsername = self.username
+            self.deletedDistance = self.distance
+            self.text = placeholder
+            self.username = ''
+            self.distance = 0
+            self.save()
+        if files:
+            if names:
+                fileset = self.file_set.filter(name__in = names)
+                imageset = self.image_set.filter(name__in = names)
+            else:
+                fileset = self.file_set.all()
+                imageset = self.image_set.all()
+            for f in fileset:
+                File.objects.create(oldMessage=f.message, deleted=f.item)
+                f.delete()
+            for i in imageset:
+                Image.objects.create(oldMessage=i.message, deleted=i.image)
+                i.delete()
+        return self
+    
 class File(models.Model):
     message = models.ForeignKey(Message,blank=True, null=True, related_name='file_set')
     oldMessage = models.ForeignKey(Message,blank=True, null=True, related_name='deletedfile_set')
