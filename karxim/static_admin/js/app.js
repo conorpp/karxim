@@ -6,6 +6,7 @@ $(document).ready(function(){
     K.locate();K.locate();
     K.loadScripts();
     K.username = Cookie.get('username');
+        
     if (K.username) {
         $('input#name').attr('placeholder', K.username);
         $('#yourName').html('Your name is '+K.username);
@@ -103,7 +104,7 @@ $(document).ready(function(){
         message.data('username', K.username);
         if (message.data('text') == '' && !message.data('fileCount') && !message.data('canvas')) return;
         if (!K.username) {
-            K.popup('Please set a name','The field is in the lower right corner.',{millis:3500});
+            K.popup('Please set a name','The field is in the top right.',{millis:3500});
             $('#name').focus();
             return;
         }
@@ -225,6 +226,17 @@ $(document).ready(function(){
         K.performEdit(true, $('#message'+pk));
     });
 
+    /* mobile */
+    var feed = $('#feedWrap');
+    $('#toggleView').click(function(){
+        if (feed.is(":visible")) {
+            feed.hide('fast');
+            $(this).html('See feed');
+        }else{
+            feed.show('fast');
+            $(this).html('See map');
+        }
+    });
 });
 
 

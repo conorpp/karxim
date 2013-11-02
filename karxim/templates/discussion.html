@@ -1,21 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<style>
 
-#logo{font-size:3em;left:8px;}
-</style>
 <div id="popupSpace" class="hide abs fright background3 mar15 shadow level5 popupSpace"></div>
 <div id="topLoad" class="fixed level3 top3" ></div>
 <div id="map" class="hide"></div>
 <div id="Discussion" class="background2 fright fixed">
-  <div id="topSpace"class="background3 color0" >
-    <div id="dX"class="fleft abs clicker background3 hide" >X</div>
-    <a href="/" ><div id="logo" class="abs fleft color1">K</div></a>
-    <div id="dTitle" class="pad5 left4 fs12 abs">{{ title }}</div>
-    <p id="info" class="abs top2 fs8 left6 bold">{{ schedule }}</p>
-  </div>
-  <div id="dFill" >
+  <table class="color0 background3" id="topSpace">
+    <tr>
+      <td id="logo"class="clicker fs20 " ><a href="/" class="mar10">K</a></td>
+      <td class=" fs12 ">
+        <a id="dTitle" href="/" target="_blank" class="">{{title}}</a>
+      </td>
+      <td class="fright" id="appendAdmin"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="info" class=" fs8   bold">{{schedule}}</td>
+
+      <td class="fright clear" >
+        <button id="nameSave" class="background4 miniInput"> Save </button>
+        <input type="text" placeholder=" Your name" id="name" class="miniInput">
+      </td>
+    </tr>
+  </table>
+  <div id="dWrap">
+    <div id="dFill" ></div>
   </div>
     {% if private and not admin %}
         <div id="hidePW">
@@ -27,26 +37,22 @@
         </div>
     {% endif %}
   <div class="clear"></div>
-  <div id="sendWrap" class="background3 ">
+  <div id="sendWrap" class="background3 fixed level2">
     <div class="errors color0 hide"></div>
     <div id="message0">
       <div class="hide background3 rel replyContainer pad5">
-        <div class="attachments color0" ></div>
-        <textarea placeholder="Write a message . . ." class="replyText " ></textarea>
-        <span class="abs ">
-            <button class="send"> Send </button><span class="replyX clicker color0 mar15">X</span>
-            <button class="attach  background4 block"> Attach files or images </button>
-            <button  class="draw  background4 block"> Draw </button>
-        </span>
         <div class="errors hide"></div>
+        <div class="attachments color0" ></div>
+        <textarea placeholder="Write a message . . ." class="replyText inline" ></textarea>
+        <div class="" >
+            <button class="send"> Send </button>
+            <button class="attach  background4 "> Attach files or images </button>
+            <button  class="draw  background4 "> Draw </button>
+            <span class="replyX clicker color0 mar5 fs20">X</span>
+        </div>
       </div>
     </div>
-    <button id="newThread" class="mar5" >New topic</button>
-    <div id="namePart" class="fright abs top0">
-      <input type="text" placeholder=" Your name" id="name">
-      <button id="nameSave" class="background4 "> Save </button>
-      <p id="yourName" class="color0"></p>
-    </div>
+    <button id="newThread" class="mar5 bold" >New topic</button>
   </div>
 </div>
 <script>

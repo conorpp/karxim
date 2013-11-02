@@ -8,7 +8,7 @@
 
 {#      new discussion and edit form      #}
 <div id="newDisc">
-  <div class="center">
+  <div class="center regularInputs">
     <input type="text" placeholder=" Discussion title" class="dTitle">
     <div class="clearL fs12 private mar5" title="Make this discussion password protected">Private <input type="checkbox"> </div>
     <input type="text" placeholder=" Discussion password" class="hide pw mar5">
@@ -51,14 +51,14 @@
 {#      Admin UI      #}
 
 <div id="adminTemplate">
-  <div class="admin pad5 left4 fright top0 abs">
-    <button class="cancelAdmin hide background5">Cancel</button>
-    <button class="doneAdmin hide background1">Submit</button>
-    <button class="editAdmin background4">Edit</button>
-    <button class="addAdmin background4">Add admin</button>
-    <button class="removeClient background4">Remove client</button>
-    <button class="deleteM background4">Delete messages</button>
-    <div class="color0 adminAction hide abs"></div>
+  <div class="admin pad5 fright top0">
+    <button class="cancelAdmin hide background5 pad5">Cancel</button>
+    <button class="doneAdmin hide background1 pad5">Submit</button>
+    <button class="editAdmin background4 pad5">Edit</button>
+    <button class="addAdmin background4 pad5">Add admin</button>
+    <button class="removeClient background4 pad5">Remove client</button>
+    <button class="deleteM background4 pad5">Delete messages</button>
+    <div class="color0 adminAction hide abs pad5"></div>
   </div>
 </div>
 
@@ -75,7 +75,7 @@
 
 {#      Checkbox for selecting client     #}
 <div id="selectClient" >
-  <input type="checkbox" class="cSelect level2 fright ">
+  <input type="checkbox" class="cSelect level2 fright rel">
 </div>
 
 {#      Announcement      #}
@@ -107,7 +107,7 @@
 
 {#      UI for editing messages      #}
 <div id="editButtons">
-  <div class="rel level3 fright clicker">
+  <div class="rel level1 fright clicker">
     <p class="edit color1 mar5">Edit</p>
     <span class="hide performEdit">
       <button class="cancelEdit background5 color0 ">Cancel</button>

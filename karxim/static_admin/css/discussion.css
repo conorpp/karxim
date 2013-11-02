@@ -2,44 +2,43 @@
     border: 1px solid;
     z-index: 2;
     top: 0px;
-    width:100%;
-    height: 89%;
+    width:100%;height:100%;
+    overflow-y:scroll;
+}
+#Discussion #dWrap{
+    height: 100%;
+    padding-bottom:16em;
 }
 #Discussion #dFill{
-    overflow-y:scroll;
     overflow-x:hidden;
-    max-height:78%;
-    margin-bottom:4em;
     width:100%;
 }
 #topSpace{
     width: 100%;
-    height: 3.5em;
+    min-height: 3.5em;
     border-bottom: 1px solid #5F5F5F;
 }
 #dX{
     z-index:4;
     top:0px;
-    padding:9px;
-    font-size: 1.5em;
 }
 #sendWrap{
-    border: 1px solid;
-    position: absolute;
+    border-top: 1px solid #5F5F5F;
     width: 100%;
-    top:88.5%;
-    min-height: 320px;
+    min-height: 60px;
+    bottom:0px;
 }
-#sendWrap input,#sendWrap textarea,#sendWrap button{
-}
-
 #sendWrap #send{
     padding: 20px;
 }
+#sendWrap textarea{
+    max-height: 160px;
+}
+#namePart{
+    height:55px;
+}
 #namePart *{
     padding:5px;
-}
-#dLink{
 }
 
 .textContainer{
@@ -47,12 +46,13 @@
     font-size:.8em;
     margin-top:4px;
     position:relative;
-    max-width:94%;
 }
 .textContainer div{
-    max-width:81%;
 }
-.replyContainer button, .textContainer button{
+.textContainer button{
+    padding:3px;
+}
+.replyContainer button{
     padding:5px;
 }
 

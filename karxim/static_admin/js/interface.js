@@ -85,8 +85,9 @@ var K = {
         $('#dTitle').html(title);
         $('#dLink').val(Settings.nakedHost+'/d/'+pk);
         if($('#schedule'+pk).length)$('#info').html($('#schedule'+pk).html());
-        $('#titleLink').attr('href', Settings.host+'/d/'+pk);
+        $('#dTitle').attr('href', Settings.host+'/d/'+pk);
         $('#sendWrap').find('textarea').attr('disabled', false);
+        $('html,body').css('overflow-y','hidden');
     },
     /* initialized the new discussion form */
     initDiscForm: function(title){
@@ -146,16 +147,16 @@ var K = {
         if(this.discussion) Message.leave(this.discussion);
         this.discussion = null;
         this.password = null;
-        
+        $('html,body').css('overflow-y','scroll');
     },
     /* installs admin UI for current discussion */
     admin:function(){
         this.adminOff();
-        $('#topSpace').append(T.admin);
+        $('#appendAdmin').html(T.admin);
     },
     /* removes admin UI */
     adminOff: function(){
-        $('#topSpace').find('.admin').remove();
+        $('#appendAdmin').html('');
     },
     
     /* displays standard message for miliseconds */
