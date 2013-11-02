@@ -65,8 +65,9 @@ var AJAXF = {
         }catch(e){}
         var data = message.data();
         console.log(data);
-        if (message.data('files')) {        //set K.file to current reply to keep files in correct replies.
-            var fileForm = $('#messageFileForm'+data.replyTo);
+        if (message.data('fileCount')) {        //set K.file to current reply to keep files in correct replies.
+            var pk = (data.replyTo == undefined) ? data.pk: data.replyTo;
+            var fileForm = $('#messageFileForm'+pk);
             for (var key in data){
                 var input = $(document.createElement('input')).attr({
                     type: 'hidden',
@@ -78,6 +79,7 @@ var AJAXF = {
             fileForm.submit();
             console.log('form submitted');
             fileForm.remove();
+            message.find('textarea').val('');
             message.removeData();
             return;
         }

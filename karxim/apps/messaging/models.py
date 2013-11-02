@@ -143,8 +143,11 @@ class Message(models.Model):
 
 class File(models.Model):
     message = models.ForeignKey(Message,blank=True, null=True, related_name='file_set')
+    oldMessage = models.ForeignKey(Message,blank=True, null=True, related_name='deletedfile_set')
     discussion = models.ForeignKey(Discussion,blank=True, null=True)
     item = models.FileField(upload_to='images/files',blank=True, null=True)
+    name = models.CharField(max_length=125)
+    deleted = models.FileField(upload_to='images/files/__deleted',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
     description = models.CharField(max_length=2000, default='')
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -153,8 +156,11 @@ class File(models.Model):
     
 class Image(models.Model):
     message = models.ForeignKey(Message,blank=True, null=True, related_name='image_set')
+    oldMessage = models.ForeignKey(Message,blank=True, null=True, related_name='deletedimage_set')
     discussion = models.ForeignKey(Discussion,blank=True, null=True)
     image = models.ImageField(upload_to='images',blank=True, null=True)
+    name = models.CharField(max_length=125)
+    deleted = models.ImageField(upload_to='images/__deleted',blank=True, null=True)
     caption = models.CharField(max_length=250, default='')
     description = models.CharField(max_length=2000, default='')
     created = models.DateTimeField(auto_now_add=True, db_index=True)

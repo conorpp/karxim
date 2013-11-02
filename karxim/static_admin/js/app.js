@@ -27,8 +27,8 @@ $(document).ready(function(){
         var selector = $(this).parents('.popupSpace');
         if (!K.getDiscValues(selector))return;
         
-        var stack = S[K.newDiscStatus+'Stack'];
-        console.log(K.newDiscStatus+'Stack');
+        var stack = S[K.newDiscStatus+'DStack'];
+        console.log(K.newDiscStatus+'DStack');
         console.log(S.newStack);
         console.log(stack);
         
@@ -57,6 +57,7 @@ $(document).ready(function(){
         if (parent.attr('id') == 'newDiscPopup') {
             try{M.removeNewMark();}catch(e){}
         }
+    
     });
     $('#newThread').click(function(){
         $('#message0').find('.replyContainer').show('fast');
@@ -88,6 +89,7 @@ $(document).ready(function(){
     $(document).on('click','.replyX', function(){
         $(this).parents('.replyContainer').hide('fast');
         $(this).parents('.replyContainer').siblings('.replyTo').show('fast');
+        $('#newThread').show();
         K.replyTo = null;
     });
     
@@ -95,17 +97,18 @@ $(document).ready(function(){
         console.log('clciked');
         var pk = K.getMessagePk(this);
         var message = $('#message'+pk);
+        message.data('status', 'new');
         message.data('replyTo', pk);
-        message.data('text', $.trim($(this).siblings('textarea').val()));
+        message.data('text', $.trim(message.find('textarea').val()));
         message.data('username', K.username);
-        if (message.data('text') == '' && !message.data('files') && !message.data('canvas')) return;
+        if (message.data('text') == '' && !message.data('fileCount') && !message.data('canvas')) return;
         if (!K.username) {
             K.popup('Please set a name','The field is in the lower right corner.',{millis:3500});
             $('#name').focus();
             return;
         }
-        if (message.data('files')) {
-            if (message.data('files').length > 5) {
+        if (message.data('fileCount')) {
+            if (message.data('fileCount') > 5) {
                 K.popup('File limit', 'You can\'t upload more than five files at a time.',{millis:4000});
                 return;
             }
@@ -121,8 +124,10 @@ $(document).ready(function(){
             $(this).parents('.replyContainer').siblings('.replyTo').show('fast');
             K.replyTo = null;
         }
-        $('#message'+pk).find('.attachments').html('');
+        $(this).parents('.replyContainer').find('.attachments').html('');
         $(this).siblings('textarea').val('')
+        $(this).parents('.replyContainer').hide();
+        $('#newThread').show();
     });
     
     $(document).on('click', '.attach', function(){
@@ -138,7 +143,7 @@ $(document).ready(function(){
             var names = $.map(files, function(val) { return ' '+val.name; });
             if (message.data('canvas'))names.push(' CanvasPic.png')
             $('#message'+pk).find('.attachments').html('Attached: '+names);
-            message.data('files',files.length);
+            message.data('fileCount',files.length);
             console.log('file upload changed for pk'+pk+'.  heres the data', message.data());
         });
     });
@@ -200,10 +205,18 @@ $(document).ready(function(){
         $('.dSubmit').trigger('click');
     });
     $(document).on('click', '.edit', function(){
+        K.performEdit(false);
         var pk = K.getMessagePk(this);
-        AJAXF.editMessage(pk);
+        K.editMessage(pk);
+       // AJAXF.editMessage(pk);    //unnecessary for now.
     });
-
+    $(document).on('click', '.cancelEdit', function(){
+        K.performEdit(false);
+    });
+    $(document).on('click', '.saveEdit', function(){
+        var pk = K.getMessagePk(this);
+        K.performEdit(true, $('#message'+pk));
+    });
 
 });
 

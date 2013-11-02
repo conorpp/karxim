@@ -295,21 +295,62 @@ var K = {
             enlargeYourContainer: true
         });
     },
-    /* finds messages owned by client to give edit UI */
+    /* finds messages owned by client to give option to edit UI */
     findCreated: function(){
-        console.log('starting search for ', '.owner'+this.userId);
         $('#dFill').children('.owner'+this.userId).each(function(){
-            $(this).prepend('<p class="edit rel level3 fright clicker color1 mar5">Edit</p>');
-            //$(this).removeClass(' owner'+this.userId);
-            //console.log($(this));
+            $(this).prepend(T.editButtons.html());
         });
         $('.owner'+this.userId).removeClass('owner'+this.userId);
     },
-    
-    editMessage: function(data){
-        data = data['messages'][0];
-        var message = $('#message'+data.pk);
-        console.log('got to edit. heres message ', message);
+    /* instantiate the UI for editing a particular message. */
+    editMessage: function(pk){
+        var message = $('#message'+pk);
+        message.data('status','edit');
+        message.data('pk',pk);
+        message.find('.edit, .replyTo, .textContainer').hide();
+        message.find('.performEdit').show('fast');
+        message.append(T.replyTemplate);
+        var form = message.find('.replyContainer');
+        form.show();
+        form.find('.replyX,.send').remove();
+        
+        var text = $(message.find('div.text').clone());
+        text.find('.latex').each(function(){
+            $(this).replaceWith('{{ '+$(this).attr('alt')+' }}')
+        });
+        form.find('textarea').val(text.html().replace(/<br>/g,'\n'));
+        
+        var files = message.find('.files').find('img,a');
+        message.data('deletedFiles',{});
+        form.prepend('<div id="deleteFiles"></div>');
+        files.each(function(){
+            form.find('#deleteFiles').append($(this).clone());
+            var element = $('<span class="clicker deleteFile" id=\"'+$(this).attr('alt')+'\">X</span><br />');
+            form.find('#deleteFiles').append(element);
+            element.click(function(){
+                if (message.data('deletedFiles')[this.id]){
+                    delete message.data('deletedFiles')[this.id];
+                }else{
+                    message.data('deletedFiles')[this.id] = this.id;
+                }
+                $(this).prev().toggleClass('deletingFile');
+            });
+        });
+        
+    },
+    /* assign last bits of data needed for edit.  Makes same ajax request as send.
+        call with false arg to uninstantiate any editing UI */
+    performEdit: function(save, message){
+        $('.performEdit').hide();
+        $('.edit,.replyTo,.textContainer').show();
+        if (save == true && message) {
+            var dict= message.data('deletedFiles');
+            message.data('deletedFiles', JSON.stringify(dict));
+            message.data('text',message.find('textarea').val());
+            message.data('username',K.username);
+            AJAXF.send(message);
+        }
+        $('#dFill').find('.replyContainer').remove();
     }
 
 };
@@ -417,7 +458,9 @@ $(document).ready(function(){
         
         canvasButtons: $('#canvasButtons').html(),
         
-        replyTemplate: $('#message0').html()
+        replyTemplate: $('#message0').html(),
+        
+        editButtons: $('#editButtons')
                 
     }
 });

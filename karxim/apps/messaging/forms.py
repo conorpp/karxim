@@ -1,16 +1,19 @@
-import base64,uuid
+import base64,uuid, os
 
 from tempfile import TemporaryFile
 from dateutil import parser
 
+from django.http import Http404
 from django import forms
-from django.utils import timezone
+from django.utils import timezone,simplejson
 from karxim.apps.messaging.models import Discussion, Message, BannedSession, Admin, File, Image
 from karxim.functions import Format, getDistance
 from karxim.settings import TIME_ZONE
 from django.core import signing
 from django.core.files import File as DjangoFile
+
 F = Format()
+
 class NewDiscussionForm(forms.ModelForm):
     title = forms.CharField(max_length = 120, required = False)
     password = forms.CharField(max_length = 120, required = False)
@@ -135,9 +138,13 @@ class NewMessageForm(forms.ModelForm):
     lng = forms.FloatField(required=False)
     username = forms.CharField(max_length=50, required = False)
     canvas = forms.CharField(required=False)
+    status = forms.CharField(required=False)
+    pk = forms.CharField(required=False)
+    deletedFiles = forms.CharField(required=False)
+    
     class Meta:
         model = Message
-        fields = ('discussion','text','username','lat', 'lng','canvas')
+        fields = ('discussion','text','username','lat', 'lng','canvas','pk','deletedFiles')
     
     def setFields(self,**kwargs):
         try:self.replyTo = int(kwargs.get('replyTo', 0))
@@ -153,24 +160,25 @@ class NewMessageForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = None
-        #print 'cleaned data',self.cleaned_data
-        self.text = self.cleaned_data['text']
+        print 'cleaned data',self.cleaned_data
         
-        if not self.sessionid:
-            self.error = 'Please allow cookies or refresh the page to continue.'
-            
+        #initialize . . .
+        self.text = self.cleaned_data['text']
         self.name = self.cleaned_data.get('username', 'hacker')[:40]
         if self.name.strip() == '': self.name = 'hacker'
         self.discussion = self.cleaned_data['discussion']
         self.lat = self.cleaned_data.get('lat',None)
         self.lng = self.cleaned_data.get('lng',None)
         self.canvas = self.cleaned_data.get('canvas',None)
+        self.status = self.cleaned_data.get('status','new')
+        self.picsEdited = []
+        self.filesEdited = []
         
-        if not self.text and not self.canvas and not self.rawFiles:
-            self.error = 'You need to send a message'
-            
+        #general validating . . . 
         if self.sessionid is None:
             self.error = 'Please allow cookies or refresh your page to continue.'
+        elif not self.text and not self.canvas and not self.rawFiles:
+            self.error = 'You need to send a message'
         elif self.discussion.bannedsessions.filter(sessionid=self.sessionid).count():
             self.error = 'You have been banned from this discussion'
         else:
@@ -182,32 +190,36 @@ class NewMessageForm(forms.ModelForm):
                 if c>2:
                     self.error = 'Please take your time with those messages.'
             except:pass
+        
+        #process pictures to be ready to displayed on instant message . . .
         if self.rawFiles:
             self.pics = []
             self.files = []
             if len(self.rawFiles) <6:
                 for f in self.rawFiles:
+                    if f._size > 2097000:
+                        self.error = 'You cannot upload files larger than 2 Megabytes'
+                        break
                     try:
                         ext = f.name.rsplit('.',1)[1]
-                        if ext.lower() in ['jpg', 'jpeg', 'gif', 'png']:
+                        if ext.lower() in ['jpg', 'jpeg', 'gif', 'png','bmp']:
                             self.pics.append(f)
                         else: self.files.append(f)
                     except: self.files.append(f)
             else: self.error = 'You can only upload up to 5 files at a time.'
         else:
-            self.pics, self.files,self.allFiles =None,None,None
+            self.pics, self.files,self.allFiles =[],[],[]
             
         if self.canvas:     #canvas pics passed as DataURL so it must have special process.
             try:
-                if self.pics is None: self.pics = []
                 code = base64.b64decode(self.canvas.split(',')[1])
                 with open('image.png', 'w') as f:
                     f.write(code)
                 img = DjangoFile(open('image.png'))
-                img.name = '%s.png' % uuid.uuid4()
                 self.pics.append(img)
             except: self.canvas = None
-
+        
+        #extra formatting/cleaning.
         if self.error is None:
             try:
                 self.distance = getDistance(self.lat,self.lng,self.discussion.lat, self.discussion.lng)
@@ -233,39 +245,78 @@ class NewMessageForm(forms.ModelForm):
     
     def save(self ):
         """ creates message and increments new message count in convo """
-        self.message = Message.objects.create()
-        self.newPk = self.message.pk        #need pk before returning
-        if self.pics and self.canvas:       #canvas pics need to be created first.
-            print 'saving pics'
-            for pic in self.pics:
-                Image.objects.create(image = pic, message = self.message)
-        return self.message
 
+        if self.status == 'new':
+            self.message = Message.objects.create()
+            self.newPk = self.message.pk        #need pk before returning
+            
+        else:
+            try:
+                self.newPk = self.cleaned_data['pk']
+                self.message = Message.objects.get(pk=self.newPk)
+                self.stem = self.message.stem
+                if self.sessionid != self.message.sessionid:
+                    raise forms.ValidationError('You do not own that message.')
+                self.handleFiles()
+            except ArithmeticError: 
+                raise Http404('Could\'t find the message to edit.')
+        if self.pics:
+            for pic in self.pics:
+                i = Image.objects.create(image = pic, message = self.message, name=pic)
+                i.name = i.__unicode__()
+                i.save()
+        if self.files:
+            for f in self.files:
+                i = File.objects.create(item = f, message = self.message, name = f)
+                i.name = i.__unicode__()
+                i.save()
+
+            
+        return self.message
+    
+    
     def commit(self):                       #for speed
-        if self.replyTo:
-            self.parent.replies += 1
-            self.parent.newReplies += 1
-            self.parent.save()
-        self.discussion.totalMessages += 1
-        self.message.discussion = self.discussion
+        if self.status == 'new':
+            if self.replyTo:
+                self.parent.replies += 1
+                self.parent.newReplies += 1
+                self.parent.save()
+            self.discussion.totalMessages += 1
+            self.message.discussion = self.discussion
+            self.message.stem = self.stem
+            self.message.parent = self.parent
         self.message.username = self.name
         self.message.text = self.text
-        self.message.stem = self.stem
-        self.message.parent = self.parent
         self.message.sessionid = self.sessionid
         if self.distance: self.message.distance = self.distance
         self.message.updateActive()
         self.message.save()
         self.discussion.save()
-        if self.pics and not self.canvas:
-            print 'saving pics'
-            for pic in self.pics:
-                Image.objects.create(image = pic, message = self.message)
-        if self.files:
-            for f in self.files:
-                File.objects.create(item = f, message = self.message)
         return self.message
-
+    
+    def handleFiles(self):
+        """ deletes specified files if any.  populated self.pics, self.files
+            with current files to send back.  for editing."""
+        deletedFiles = self.cleaned_data.get('deletedFiles',None)
+        if deletedFiles is not None:
+            deletedFiles = simplejson.loads(deletedFiles)
+            print deletedFiles
+            for d in deletedFiles:
+                try:
+                    i = self.message.image_set.get(name = d)
+                    Image.objects.create(oldMessage=i.message, deleted=i.image)
+                    i.delete()
+                except ArithmeticError:
+                    try:
+                        f= self.message.image_set.get(name = d)
+                        File.objects.create(oldMessage=f.message, deleted=f.item)
+                        f.delete()
+                    except:pass
+        for i in self.message.image_set.all():
+            self.picsEdited.append(i)
+        for i in self.message.file_set.all():
+            self.filesEdited.append(i)
+        
 #client spam bot tester (currently protected from this)
 """
 

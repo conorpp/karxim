@@ -30,17 +30,18 @@
   <div id="sendWrap" class="background3">
     <div class="errors color0 hide"></div>
     <div id="message0">
-      <div class="hide background3 rel replyContainer">
-        <div class="replyX abs fright clicker">X</div>
+      <div class="hide background3 rel replyContainer pad5">
         <div class="attachments color0" ></div>
-        <textarea placeholder="Write a message . . ."  ></textarea>
-        <button class="send abs"> Send </button>
-        <button class="attach abs background4 top3"> Attach files or images </button>
-        <button  class="draw abs background4 top5"> Draw </button>
+        <textarea placeholder="Write a message . . ." class="replyText " ></textarea>
+        <span class="abs ">
+            <button class="send"> Send </button><span class="replyX clicker color0 mar15">X</span>
+            <button class="attach  background4 block"> Attach files or images </button>
+            <button  class="draw  background4 block"> Draw </button>
+        </span>
         <div class="errors hide"></div>
       </div>
     </div>
-    <button id="newThread" >New topic</button>
+    <button id="newThread" class="mar5" >New topic</button>
     <div id="namePart" class="fright abs top0">
       <input type="text" placeholder=" Your name" id="name">
       <button id="nameSave" class="background4 "> Save </button>

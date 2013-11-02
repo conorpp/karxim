@@ -85,22 +85,19 @@ Message.connect();
 
 Message.socket.on('getMessage', function(data) {
     if (data['discussion'] != K.discussion) return;
-    var pk = data['pk'];
-    var message = data['html'];
-    if (data['replyTo']) {
-        $('#dFill').find('#message'+data['replyTo']).after(message);
-    }else $('#dFill').prepend(message);
-    var select = $('#message'+pk);
-    select.find('.time').html(Message.time());
-    select.hide();
-    select.show(100);
-    K.findCreated();
+    if (data['stack']) {
+        var stack = S[data['stack']+'MStack'];
+    }else{
+        var stack = S['newMStack']
+    }
+    for(i in stack) stack[i](data);
+    return;
 });
 
 Message.socket.on('update', function(data) {
     console.log('data update',data);
     if (data['stack']) {
-        var stack = S[data['stack']+'Stack'];
+        var stack = S[data['stack']+'MStack'];
         for(i in stack) stack[i](data);
         return;
     }

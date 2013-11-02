@@ -10,6 +10,7 @@ a{
 }
 img{
     max-width:900px;
+    cursor:pointer;
 }
 .abs{position: absolute;}
 .fixed{position: fixed;}
@@ -44,6 +45,7 @@ textarea{
     padding:4px;
     min-height: 80px;
     min-width: 19em;
+    max-width: 85%;
 }
 img.thumbnail{
     max-height: 50px;
@@ -53,9 +55,7 @@ img.full{
     max-height: 420px;
     max-width: 420px;
 }
-img.hover:hover{
-    border:1px solid black;
-}
+
 button:hover{
     color:#2b2b2b;
 }

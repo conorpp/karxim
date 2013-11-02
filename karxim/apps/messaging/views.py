@@ -1,5 +1,6 @@
 import redis
 
+from django.http import Http404
 from django.core import serializers
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect, get_object_or_404
 from django.core.urlresolvers import reverse
@@ -62,7 +63,7 @@ def messages(request):
     admin=False
     error=None
     try:d = Discussion.objects.filter(removed=False).get(pk=pk)
-    except: return HttpResponse(status=404)
+    except: raise Http404('The discussion doesn\'t exist')
     try:
         sessionid = request.session['chatsession']
         if d.admins.filter(sessionid = sessionid).count():
@@ -97,7 +98,7 @@ def messages(request):
     
     messages = d.message_set.all()
 
-    data = MessageSerializer(messages).data(admin=admin)
+    data = MessageSerializer(messages).data()
 
     REDIS.publish(0, simplejson.dumps({'TYPE':'subscribe','pk':pk, 'sessionid':sessionid}))
     
@@ -108,8 +109,8 @@ def send(request):
     """ recieving and processing messages from chats """
     try:
         pk = request.POST['discussion']
-        #print 'request.POST : ',request.POST
-        #print 'request.FILES : ',request.FILES
+        print 'request.POST : ',request.POST
+        print 'request.FILES : ',request.FILES
         form = NewMessageForm(request.POST)
         chatsession = request.session.get('chatsession',None)
         form.setFields(replyTo = request.POST.get('replyTo',None),
@@ -120,10 +121,12 @@ def send(request):
             REDIS.publish(0,data)
             return HttpResponse()
         form.save()
+    
         data = {'TYPE':'message',
                 'replyTo':form.replyTo,
                 'pk':form.newPk,
-                'discussion':form.discussion.pk
+                'discussion':form.discussion.pk,
+                'stack':form.status
             }
         m ={
             'pk':form.newPk,
@@ -133,8 +136,8 @@ def send(request):
             'stem':form.stem,
             'distance': form.distance,
             'age':timezone.now().strftime('%I:%M %p'),
-            'file_set':{'all': form.files},
-            'image_set':{'all': form.pics}
+            'file_set':{'all': form.files+form.filesEdited},
+            'image_set':{'all': form.pics+form.picsEdited}
             }
                 
         data['html'] = render_to_string('parts/message.html',{
@@ -149,7 +152,6 @@ def send(request):
         print str(e)
         return HttpResponse(status=500)    
             
-def admin(request):pass
 
 def discussion(request,pk='0'):
     try:
@@ -228,7 +230,9 @@ def client(request):
 def dInfo(request):
     """ returns info in json about one discussion.  for editing. """
     pk = request.GET.get('pk')
-    d = get_object_or_404(Discussion, pk=pk)
+    d = Discussion.objects.filter(pk=pk)
+    if not d.count():
+        raise Http404()
     fields = (
         'startDate', 'endDate', 'private', 'password', 'title', 'location'
     )

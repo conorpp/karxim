@@ -102,10 +102,10 @@ class Format():
         latex = match[2:len(match)-2]
         try:
             f = Formula.objects.create(formula = latex)
-            return u'<img src="/static/static_site/%s" alt="%s" />' % (f.image.name, escape(f.formula))
+            return u'<img src="/static/static_site/%s" alt="%s" class="latex"/>' % (f.image.name, escape(f.formula))
         except Exception as e:
             print 'Error creating formula : ', e
-            return u'<img src="_blank" alt="LATEX ERROR: %s" />' % e
+            return u'<img src="_blank" alt="LATEX ERROR: %s" class="latex"/>' % e
 
 
 
