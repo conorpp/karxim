@@ -160,7 +160,7 @@ class NewMessageForm(forms.ModelForm):
         if any(self.errors):
             return
         self.error = None
-        print 'cleaned data',self.cleaned_data
+        #print 'cleaned data',self.cleaned_data
         
         #initialize . . .
         self.text = self.cleaned_data['text']
@@ -300,9 +300,9 @@ class NewMessageForm(forms.ModelForm):
     def handleFiles(self):
         """ deletes specified files if any.  populated self.pics, self.files
             with current files to send back.  for editing."""
-        deletedFiles = self.cleaned_data.get('deletedFiles',None)
-        if deletedFiles is not None:
-            deletedFiles = simplejson.loads(deletedFiles)
+        deletedFiles = simplejson.loads(self.cleaned_data.get('deletedFiles','{}'))
+        if deletedFiles:
+            print 'json loaded deleted files', deletedFiles
             self.message.saveDelete(message=False, files=True, names=deletedFiles)
         for i in self.message.image_set.all():
             self.picsEdited.append(i)
