@@ -53,6 +53,7 @@ class MessageSerializer():
         self.nests = 20
         self.html = kwargs.get('html', True)
         self.json = kwargs.get('json', True)
+        self.admin = kwargs.get('admin','false')
         self.fields = kwargs.get('fields', (
             
             ))
@@ -66,7 +67,7 @@ class MessageSerializer():
         except Exception as e:
             messages = [self.assignFields(self.messages)]                  #object
         
-        data = {'messages':messages,'admin':kwargs.get('admin','false')}
+        data = {'messages':messages,'admin':self.admin}
         if self.json:
             return simplejson.dumps(data)
         else: return data

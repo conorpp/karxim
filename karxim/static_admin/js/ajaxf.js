@@ -32,7 +32,7 @@ var AJAXF = {
                 K.loaded();
                 var fill = $('#dFill');
                 fill.html('');
-                
+                console.log('got data back ', data);
                 if (data['error']) {
                     K.popup(data['error'],data['message'],{millis:5000});
                     console.log(data['error']);
@@ -41,6 +41,7 @@ var AJAXF = {
                     }
                     return;
                 }
+                K.adminOff()
                 if (data['admin']) K.admin();
                 
                 var messages = data['messages'];

@@ -98,7 +98,7 @@ def messages(request):
     
     messages = d.message_set.all()
 
-    data = MessageSerializer(messages).data()
+    data = MessageSerializer(messages, admin=admin).data()
 
     REDIS.publish(0, simplejson.dumps({'TYPE':'subscribe','pk':pk, 'sessionid':sessionid}))
     
