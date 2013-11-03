@@ -177,7 +177,7 @@ def discussion(request,pk='0'):
         return render(request,'discussion.html', data)
     except Exception as e:
         print('error loading discussion',e)
-        return HttpResponse(status=404)
+        raise Http404('That discussion doesn\'t exist')
     
 def client(request):
     """ for changing status of client (admin, banning, ect) """
