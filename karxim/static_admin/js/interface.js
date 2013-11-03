@@ -86,7 +86,7 @@ var K = {
         $('#dLink').val(Settings.nakedHost+'/d/'+pk);
         if($('#schedule'+pk).length)$('#info').html($('#schedule'+pk).html());
         $('#dTitle').attr('href', Settings.host+'/d/'+pk);
-        $('#sendWrap').find('textarea').attr('disabled', false);
+        $('textarea').attr('disabled', false);
         $('html,body').css('overflow-y','hidden');
     },
     /* initialized the new discussion form */

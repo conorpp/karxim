@@ -41,7 +41,7 @@ def start(request):
                 title = 'Edit'
                 message = 'Your discussion information has been updated successfully.'
             elif form.status == 'delete':
-                data = simplejson.dumps({'TYPE':'update','stack':'delete','pk':form.discussion.pk})
+                data = simplejson.dumps({'TYPE':'update','stack':'deleteD','pk':form.discussion.pk})
                 REDIS.publish(form.discussion.pk, data)
                 return HttpResponse(data)
             #Leaving out until user registration is available.
@@ -126,7 +126,7 @@ def send(request):
                 'replyTo':form.replyTo,
                 'pk':form.newPk,                     #message pk
                 'discussion':form.discussion.pk,    #discssion pk
-                'stack':form.status
+                'stack':form.status+'M'
             }
         m ={
             'pk':form.newPk,
@@ -191,11 +191,13 @@ def client(request):
     d = Discussion.objects.get(pk=pk)
     try:
         key = request.session['chatsession']
-        d.admins.get(sessionid=key)
+        c = d.admins.filter(sessionid=key)
+        if not c.count():
+            raise KeyError('You\'re not an admin')
     except:return HttpResponse(status=403)
     
     messages = d.message_set.filter(pk__in = messages)
-    
+    print 'client post ',request.POST
     if action == 'ban':
         for m in messages:
             sessionid = m.sessionid
@@ -225,7 +227,7 @@ def client(request):
         for m in messages:
             m.saveDelete(text=True, files=True)
             html = render_to_string('parts/message.html',{'m':m})
-            data = {'TYPE':'message','pk':m.pk,'discussion':pk,'stack':'edit','html':html}
+            data = {'TYPE':'message','pk':m.pk,'discussion':pk,'stack':'editM','html':html}
             REDIS.publish(pk, simplejson.dumps(data))
             
     

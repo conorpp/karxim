@@ -4,7 +4,7 @@
 $(document).ready(function(){
     S.newDStack = new Array(S._Discussion.creation);        //new discussion
     S.editDStack = new Array(S._Discussion.edit);           //edit discussion
-    S.deletDeStack = new Array(S._Discussion.del);       //delete discussion
+    S.deleteDStack = new Array(S._Discussion.del);       //delete discussion
     
     S.announceStack = new Array(S._Message.announce);   //announcement message to discussion
     S.newMStack = new Array(S._Message.creation);                  //new message to current discussion
@@ -14,10 +14,8 @@ $(document).ready(function(){
 var S = {
     _Discussion: {
         creation: function(data){
-           console.log('creation called');
             if (!data['error']) {
                 K.deleteDiscForm();
-                console.log(K.newDiscStatus);
                 M.removeNewMark();
                 K.update(data,{'prepend':true});
                 //if (data['admin']=='True') {
@@ -26,6 +24,8 @@ var S = {
                     'We can only track your admin status for this discussion for up to twenty days, or until you clear your browser\'s cookies. <br /><br /> The option to register and have permanent admin status will be available soon.');
                 //}
                 K.loadDisc(data[0]['pk']);
+                //console.log('relocating ', Settings.host);
+                //window.location = Settings.host+'/d/'+data[0]['pk'];
             }else this._error(data['error']);
         },
         
@@ -39,7 +39,7 @@ var S = {
         del: function(data){
             if(data['pk']==K.discussion){
                 K.popup('Discussion has ended','An admin has ended the discussion and it is no longer available.');
-                $('#sendWrap').find('textarea').attr('disabled', true);
+                $('textarea').attr('disabled', true);
                 Message.leave(data['pk']);
                 K.deleteDiscForm();
                 K.adminOff();

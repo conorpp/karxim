@@ -14,16 +14,16 @@ html body{
 }
 
 /*   MOBILE   */
-#toggleView{
-    visibility:hidden;
+#menu .mItem#toggleView{
+    display:none;
 }
 @media all and (max-width: 480px) {
     #feedWrap{
         width:100%;
         padding-top:45px;
     }
-    #toggleView{
-        visibility:visible;
+#menu .mItem#toggleView{
+        display:inline-block;
     }
     #menu .mItem{
         padding:12px;

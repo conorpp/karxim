@@ -73,3 +73,6 @@
 .deletingFile{
     border: 1px solid red;
 }
+.files img{
+    cursor:pointer;
+}

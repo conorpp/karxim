@@ -10,7 +10,7 @@
     <tr>
       <td id="logo"class="clicker fs20 " ><a href="/" class="mar10">K</a></td>
       <td class=" fs12 ">
-        <a id="dTitle" href="/" target="_blank" class="">{{title}}</a>
+        {{title}}
       </td>
       <td class="fright" id="appendAdmin"></td>
     </tr>
@@ -24,18 +24,18 @@
       </td>
     </tr>
   </table>
-  <div id="dWrap">
-    <div id="dFill" ></div>
-  </div>
     {% if private and not admin %}
         <div id="hidePW">
-            <div class="color0 mar20">
+            <div class="color0 mar20 regularInputs">
                 <h2> Private </h2>
                 <input type="text" placeholder="Password" class="pw" >
                 <button class="color0 background1 joinPriv" id="joinPriv{{pk}}"> Join </button>
             </div>
         </div>
     {% endif %}
+  <div id="dWrap">
+    <div id="dFill" ></div>
+  </div>
   <div class="clear"></div>
   <div id="sendWrap" class="background3 fixed level2">
     <div class="errors color0 hide"></div>

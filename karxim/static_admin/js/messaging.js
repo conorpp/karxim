@@ -86,7 +86,7 @@ Message.connect();
 Message.socket.on('getMessage', function(data) {
     if (data['discussion'] != K.discussion) return;
     if (data['stack']) {
-        var stack = S[data['stack']+'MStack'];
+        var stack = S[data['stack']+'Stack'];
     }else{
         var stack = S['newMStack']
     }
@@ -97,7 +97,7 @@ Message.socket.on('getMessage', function(data) {
 Message.socket.on('update', function(data) {
     console.log('data update',data);
     if (data['stack']) {
-        var stack = S[data['stack']+'MStack'];
+        var stack = S[data['stack']+'Stack'];
         for(i in stack) stack[i](data);
         return;
     }

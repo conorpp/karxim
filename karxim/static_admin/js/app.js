@@ -116,7 +116,7 @@ $(document).ready(function(){
         }
         AJAXF.send(message);
         if (pk == 0) {
-            setTimeout(function(){$("#dFill").animate({ scrollTop: "0px" });},200);
+            setTimeout(function(){$("#Discussion").animate({ scrollTop: "0px" });},200);
             $('#startThread').hide('fast');
             $('#newThread').show();
             console.log('discussion 12', K.discussion);
@@ -126,7 +126,7 @@ $(document).ready(function(){
             K.replyTo = null;
         }
         $(this).parents('.replyContainer').find('.attachments').html('');
-        $(this).siblings('textarea').val('')
+        $(this).parents('.replyContainer').find('textarea').val('');
         $(this).parents('.replyContainer').hide();
         $('#newThread').show();
     });
@@ -172,9 +172,25 @@ $(document).ready(function(){
         T.draw.hide('fast');
     });
     
+    $(document).on('click', '.setCanvasBg', function(){
+        $('#canvasBg').trigger('click');
+    });
+    $('#canvasBg').change(function(e){
+        var img = new Image();
+        img.src = e.target.result;
+        var canvas = $('canvas');
+       // canvas.setWidth(img.width);
+       // canvas.setHeight(img.height);
+       canvas.css('background',img.src);
+        //canvas.setBackgroundImage(img.src, canvas.renderAll.bind(canvas));
+        //canvas.backgroundImageStretch = false;
+    });
+    
     $(document).on('click', 'img', function(){
         $(this).toggleClass('thumbnail full');
     });
+    
+
     
     /* admin capabilities */
     
