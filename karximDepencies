@@ -1,0 +1,21 @@
+nodejs, socketio, redis for instant messaging
+
+$ apt-get install nodejs
+$ apt-get install redis-server
+$ pip install redis
+$ npm install socket.io
+$ npm install cookie 
+$ npm install crypto
+
+Django South
+$ pip install South
+
+lxml for validating/formatting html 
+
+$ pip install lxml
+$ pip install BeautifulSoup  #version 3, NOT 4.
+
+math formatting
+
+$ apt-get livetex
+$ apt-get dvipng

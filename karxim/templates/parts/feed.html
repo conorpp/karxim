@@ -1,0 +1,13 @@
+{% load tz %}
+<div id="dFeed{{d.pk}}" class="dFeed background2 color0 pad5 fs7">
+    <span class="private abs fright mar5">{% if d.private %}Private{% endif %}</span>
+    <a href="http://{{WEB_URL}}/d/{{d.pk}}" target="_blank"><h2>{{d.title}}</h2></a>
+    {% if d.schedule %}<p id="schedule{{d.pk}}" class="bold">{{ d.schedule }}</p>{% endif %}
+    {% if d.startDate %}
+        <p>At {{d.startDate|localtime}}</p>
+    {% else %}
+        <p>Last active {{ d.lastAge }}</p>
+    {% endif %}
+
+    
+</div>
