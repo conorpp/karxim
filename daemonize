@@ -1,0 +1,4 @@
+#!/bin/bash
+
+screen -d -m -L python manage.py runserver localhost:8003
+
