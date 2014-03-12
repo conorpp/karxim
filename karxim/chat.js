@@ -28,15 +28,6 @@ var gen = redis.createClient(Settings.RedisPort);	//general functions redis. Cha
 gen.subscribe(0); 	
 var SOCKETS = {};
 
-/*	NOT USED
-var crypto = require('crypto');
-var hash = crypto.createHash('sha1');		//for unsigning chat sessionid's
-if (Settings.development) var secretKey = '+fs7yhamybso)nl5g#cwpw-w$1n(@xm+cccq35rag-b#87%t+*';
-else var secretKey = 'afd7yhamy4so)nd6ggcwp)-wrd~(@xm+rcc31jrag-k#87%t-#';
-hash.update(secretKey);
-const unsign_key = hash.digest();
-*/
-//Configure socket.io to store cookies
 io.configure(function(){
     io.set('authorization', function(data, accept){
         

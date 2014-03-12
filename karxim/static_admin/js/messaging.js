@@ -30,6 +30,7 @@ var Message = {
                 K.popup('Connected','We successfully reconnected you.',{millis:4100});
                 $('textarea').attr('disabled',false);
             });
+
             this.socket.on('disconnect', function () {
                 $('textarea').attr('disabled',true);
                 K.popup('','disconnected');

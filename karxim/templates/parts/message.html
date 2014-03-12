@@ -1,0 +1,24 @@
+{% load tags %}
+<div class="message background4 color0 owner{{m.sessionid}}" id="message{{m.pk}}" style="margin-left: {{ m.stem|marginHTML }}">
+    <div class="textContainer rel">
+        <div class="text">{{m.text|safe}}</div>
+        <div class="files">
+        {% for i in m.image_set.all %}
+            <img src="/static/static_site/images/{{i}}" class="thumbnail hover" alt="{{i}}">
+        {% endfor %}
+        {% for f in m.file_set.all %}
+            <a class="colorB" href="/static/static_site/images/files/{{f}}" alt="{{f}}" target="_blank">{{f}}</a>
+        {% endfor %}
+        </div>
+        <div class="info pad10"> 
+            <span>
+                {{m.username}}
+            </span> |
+            <span>
+                <span class="time">{{m.age}}</span>{% if m.distance %} | <span> from {{ m.distance }} miles away </span>{% endif %}
+            </span>
+            <button class="replyTo inline pad0"> Reply to {{m.username}} </button>
+        </div>
+        {# replying template would be appended here #}
+    </div>
+</div>

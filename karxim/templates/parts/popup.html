@@ -1,0 +1,14 @@
+
+<div id="discussion{{d.pk}}" class="regularInputs">
+    <h2>{{d.title}}</h2>
+    <span>{{d.totalMessages}} messages</span>,
+    <span>Last active {{d.lastAge}}</span>
+    {% if not d.private %}
+        <br />
+        <button class="color0 background1 join " id="join{{d.pk}}"> Join </button>
+    {% else %}
+        <p class="color0 fs14">Private</p>
+        <input type="text" placeholder="Password" class="pw" >
+        <button class="color0 background1 joinPriv" id="joinPriv{{d.pk}}"> Join </button>
+    {% endif %}
+</div>
