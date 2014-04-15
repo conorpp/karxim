@@ -23,10 +23,10 @@ DATABASES = {
     }
 }
 REDIS_PORT = 14177
-WEB_URL = 'localhost:8003'
+WEB_URL = 'karxim.com'
 
 #web socket url
-SOCKET_URL = 'http://localhost:4000/socket.io/socket.io.js'
+SOCKET_URL = 'http://karxim.com:4000/socket.io/socket.io.js'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts

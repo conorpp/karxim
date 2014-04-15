@@ -8,7 +8,7 @@ var Message = {
     */
     connect: function(){
         try {
-            this.socket = io.connect(Settings.simpleHost, {port: Settings.MessagePort});
+            this.socket = io.connect('karxim.com', {port: Settings.MessagePort});
             this.socket.on('connecting', function () {K.loading()});
             this.socket.on('connect', function(){
                 K.loaded();

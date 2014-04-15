@@ -11,13 +11,16 @@
 //$ npm install crypto
 
 var Settings = require('./static_admin/settings/settings');
+var fs = require('fs');
+var asettings = JSON.parse(fs.readFileSync('/home/ubuntu/web_apps/CORE/apps.json'));
+Settings.RedisPort = asettings.services.redis;
 console.log('------------------------------------------------\n');
 console.log('Starting up Node.  Here is the config : \n',Settings);
 console.log('\n------------------------------------------------\n');
 
 var http = require('http');
-var server = http.createServer().listen(Settings.MessagePort, Settings.hostIP);
-var io = require('socket.io').listen(server);
+//r server = http.createServer().listen(Settings.MessagePort,'localhost');
+var io = require('socket.io').listen(Settings.MessagePort);
 var cookie_reader = require('cookie');
 var querystring = require('querystring');
 
@@ -30,13 +33,14 @@ var SOCKETS = {};
 
 io.configure(function(){
     io.set('authorization', function(data, accept){
-        
+	//console.log(data.headers);        
 	if (data.headers.cookie) {
-            data.cookie = cookie_reader.parse(data.headers.cookie);
-            return accept(null, true);
+          data.cookie = cookie_reader.parse(data.headers.cookie);
+          return accept(null, true);
         }
         return accept('error',false);
-    });
+	//return accept(null, true);    
+	});
     io.set('log level',1);
 });
 
